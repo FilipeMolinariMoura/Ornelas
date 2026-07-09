@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MODULES, MENTORIAS, STUDIO, USER, INITIAL_FAVS } from "./data";
 import LessonCard from "./LessonCard";
 
-const CINZEL = "var(--font-cinzel), serif";
+const CINZEL = "var(--font-title), serif";
 const MANROPE = "var(--font-manrope), sans-serif";
 
 // Configurações de exibição (props do protótipo original).
@@ -19,6 +19,18 @@ export default function Page() {
   const [lessonId, setLessonId] = useState("l11");
   const [progress, setProgress] = useState({});
   const [fav, setFav] = useState(() => new Set(INITIAL_FAVS));
+  const [theme, setTheme] = useState("classic"); // "classic" | "visagista"
+
+  // Persiste a escolha de tema entre visitas.
+  useEffect(() => {
+    const saved = window.localStorage.getItem("ornellas-theme");
+    if (saved === "classic" || saved === "visagista") setTheme(saved);
+  }, []);
+  useEffect(() => {
+    window.localStorage.setItem("ornellas-theme", theme);
+  }, [theme]);
+  const toggleTheme = () =>
+    setTheme((t) => (t === "classic" ? "visagista" : "classic"));
 
   const mainRef = useRef(null);
 
@@ -100,7 +112,7 @@ export default function Page() {
       mtitle: m.title,
       code: m.num + "." + (i + 1),
       fav: isFav,
-      favColor: isFav ? "#e7c87e" : "rgba(255,255,255,.55)",
+      favColor: isFav ? "var(--gold-bright)" : "rgba(255,255,255,.55)",
       favLabel: isFav ? "Favoritada" : "Favoritar",
       prog: p,
       progStyle: p + "%",
@@ -139,9 +151,9 @@ export default function Page() {
       return {
         ...l,
         isCurrent: cur,
-        rowBg: cur ? "rgba(201,162,75,.1)" : "transparent",
-        rowBorder: cur ? "rgba(201,162,75,.35)" : "rgba(255,255,255,.06)",
-        titleColor: cur ? "#f3dca0" : "#ece7dd",
+        rowBg: cur ? "rgba(var(--gold-rgb),.1)" : "transparent",
+        rowBorder: cur ? "rgba(var(--gold-rgb),.35)" : "rgba(255,255,255,.06)",
+        titleColor: cur ? "var(--gold-light)" : "var(--text)",
         statusLabel: cur
           ? "Assistindo agora · " + l.dur
           : l.complete
@@ -167,7 +179,10 @@ export default function Page() {
   const cardBasis = CARD_WIDTH + "px";
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#0b0a09" }}>
+    <div
+      data-theme={theme}
+      style={{ display: "flex", minHeight: "100vh", background: "var(--bg)" }}
+    >
       {/* SIDEBAR */}
       <aside
         style={{
@@ -178,8 +193,8 @@ export default function Page() {
           width: 264,
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(180deg,#100e0b,#0a0908)",
-          borderRight: "1px solid rgba(201,162,75,.16)",
+          background: "linear-gradient(180deg,var(--surf),var(--bg))",
+          borderRight: "1px solid rgba(var(--gold-rgb),.16)",
           zIndex: 20,
         }}
       >
@@ -188,7 +203,7 @@ export default function Page() {
           style={{
             cursor: "pointer",
             padding: "26px 24px 22px",
-            borderBottom: "1px solid rgba(201,162,75,.12)",
+            borderBottom: "1px solid rgba(var(--gold-rgb),.12)",
             textAlign: "center",
           }}
         >
@@ -198,7 +213,7 @@ export default function Page() {
               fontWeight: 700,
               fontSize: 24,
               letterSpacing: ".08em",
-              background: "linear-gradient(180deg,#f7e6b6,#d4af5e 50%,#9a7a36)",
+              background: "linear-gradient(180deg,var(--gold-cream),var(--gold) 50%,var(--gold-deep))",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               color: "transparent",
@@ -211,7 +226,7 @@ export default function Page() {
               marginTop: 4,
               fontSize: 9.5,
               letterSpacing: ".46em",
-              color: "#7c6a45",
+              color: "var(--text-faint)",
               paddingLeft: ".46em",
             }}
           >
@@ -231,7 +246,7 @@ export default function Page() {
             style={{
               fontSize: 9.5,
               letterSpacing: ".2em",
-              color: "#5f5949",
+              color: "var(--text-dim)",
               textTransform: "uppercase",
               padding: "4px 12px 10px",
             }}
@@ -254,9 +269,9 @@ export default function Page() {
                   cursor: "pointer",
                   fontSize: 13.5,
                   fontWeight: a ? 700 : 500,
-                  color: a ? "#e7c87e" : "#b8b2a6",
-                  background: a ? "rgba(201,162,75,.1)" : "transparent",
-                  boxShadow: `inset 3px 0 0 ${a ? "#c9a24b" : "transparent"}`,
+                  color: a ? "var(--gold-bright)" : "var(--text-mut)",
+                  background: a ? "rgba(var(--gold-rgb),.1)" : "transparent",
+                  boxShadow: `inset 3px 0 0 ${a ? "var(--gold)" : "transparent"}`,
                 }}
               >
                 <span
@@ -264,7 +279,7 @@ export default function Page() {
                     width: 6,
                     height: 6,
                     transform: "rotate(45deg)",
-                    background: a ? "#e7c87e" : "rgba(201,162,75,.35)",
+                    background: a ? "var(--gold-bright)" : "rgba(var(--gold-rgb),.35)",
                     flexShrink: 0,
                   }}
                 />
@@ -279,11 +294,11 @@ export default function Page() {
           style={{
             margin: "6px 18px 18px",
             padding: 14,
-            border: "1px solid rgba(201,162,75,.2)",
+            border: "1px solid rgba(var(--gold-rgb),.2)",
             borderRadius: 12,
             cursor: "pointer",
             background:
-              "radial-gradient(120% 120% at 0% 0%, rgba(201,162,75,.1), transparent 60%)",
+              "radial-gradient(120% 120% at 0% 0%, rgba(var(--gold-rgb),.1), transparent 60%)",
           }}
         >
           <div
@@ -293,7 +308,7 @@ export default function Page() {
               gap: 7,
               fontSize: 9.5,
               letterSpacing: ".18em",
-              color: "#c9a24b",
+              color: "var(--gold)",
               textTransform: "uppercase",
             }}
           >
@@ -302,16 +317,16 @@ export default function Page() {
                 width: 7,
                 height: 7,
                 borderRadius: "50%",
-                background: "#e7c87e",
-                boxShadow: "0 0 0 3px rgba(231,200,126,.18)",
+                background: "var(--gold-bright)",
+                boxShadow: "0 0 0 3px rgba(var(--gold-rgb),.18)",
               }}
             />
             Matrículas abertas
           </div>
-          <div style={{ marginTop: 9, fontSize: 13, fontWeight: 600, color: "#efe9df" }}>
+          <div style={{ marginTop: 9, fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
             Mentorias presenciais
           </div>
-          <div style={{ marginTop: 3, fontSize: 11.5, color: "#8c867a" }}>
+          <div style={{ marginTop: 3, fontSize: 11.5, color: "var(--text-dim)" }}>
             4 segundas · 9h–16h · Barra da Tijuca
           </div>
         </div>
@@ -320,7 +335,7 @@ export default function Page() {
           style={{
             marginTop: "auto",
             padding: 16,
-            borderTop: "1px solid rgba(201,162,75,.12)",
+            borderTop: "1px solid rgba(var(--gold-rgb),.12)",
             display: "flex",
             alignItems: "center",
             gap: 11,
@@ -337,8 +352,8 @@ export default function Page() {
               justifyContent: "center",
               fontFamily: CINZEL,
               fontSize: 14,
-              color: "#1a160d",
-              background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+              color: "var(--on-gold)",
+              background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
             }}
           >
             {USER.init}
@@ -348,7 +363,7 @@ export default function Page() {
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: "#efe9df",
+                color: "var(--text)",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -356,7 +371,7 @@ export default function Page() {
             >
               {USER.name}
             </div>
-            <div style={{ fontSize: 10.5, color: "#7c6a45" }}>{USER.meta}</div>
+            <div style={{ fontSize: 10.5, color: "var(--text-faint)" }}>{USER.meta}</div>
           </div>
         </div>
       </aside>
@@ -383,17 +398,17 @@ export default function Page() {
             justifyContent: "space-between",
             gap: 16,
             padding: "14px 48px",
-            background: "rgba(11,10,9,.82)",
+            background: "rgba(var(--bg-rgb),.82)",
             backdropFilter: "blur(10px)",
-            borderBottom: "1px solid rgba(201,162,75,.1)",
+            borderBottom: "1px solid rgba(var(--gold-rgb),.1)",
           }}
         >
-          <div style={{ fontSize: 13, color: "#b3ac9f" }}>
+          <div style={{ fontSize: 13, color: "var(--text-mut)" }}>
             Bem-vindo de volta,{" "}
-            <span style={{ color: "#efe9df", fontWeight: 600 }}>{USER.name}</span>
+            <span style={{ color: "var(--text)", fontWeight: 600 }}>{USER.name}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ fontSize: 11, letterSpacing: ".04em", color: "#8c867a" }}>
+            <div style={{ fontSize: 11, letterSpacing: ".04em", color: "var(--text-dim)" }}>
               28 aulas · 5 módulos
             </div>
             <div
@@ -402,11 +417,11 @@ export default function Page() {
                 alignItems: "center",
                 gap: 7,
                 padding: "6px 12px",
-                border: "1px solid rgba(201,162,75,.3)",
+                border: "1px solid rgba(var(--gold-rgb),.3)",
                 borderRadius: 20,
                 fontSize: 11,
                 letterSpacing: ".06em",
-                color: "#e7c87e",
+                color: "var(--gold-bright)",
               }}
             >
               <span
@@ -414,10 +429,29 @@ export default function Page() {
                   width: 6,
                   height: 6,
                   borderRadius: "50%",
-                  background: "#e7c87e",
+                  background: "var(--gold-bright)",
                 }}
               />
               Acesso vitalício
+            </div>
+
+            {/* Toggle de identidade visual */}
+            <div
+              onClick={toggleTheme}
+              title="Alternar identidade visual"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                padding: 4,
+                border: "1px solid rgba(var(--gold-rgb),.3)",
+                borderRadius: 20,
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+            >
+              <span style={segStyle(theme === "classic")}>Clássico</span>
+              <span style={segStyle(theme === "visagista")}>Visagista</span>
             </div>
           </div>
         </div>
@@ -432,8 +466,8 @@ export default function Page() {
                 textAlign: "center",
                 overflow: "hidden",
                 background:
-                  "radial-gradient(120% 130% at 50% -10%, rgba(201,162,75,.14), transparent 55%), linear-gradient(180deg,#17130d,#0c0b09)",
-                borderBottom: "1px solid rgba(201,162,75,.2)",
+                  "radial-gradient(120% 130% at 50% -10%, rgba(var(--gold-rgb),.14), transparent 55%), linear-gradient(180deg,var(--surf),var(--bg))",
+                borderBottom: "1px solid rgba(var(--gold-rgb),.2)",
               }}
             >
               <div
@@ -452,7 +486,7 @@ export default function Page() {
                     alignItems: "center",
                     justifyContent: "center",
                     gap: 14,
-                    color: "#c9a24b",
+                    color: "var(--gold)",
                     fontSize: 10.5,
                     letterSpacing: ".32em",
                     textTransform: "uppercase",
@@ -463,7 +497,7 @@ export default function Page() {
                     style={{
                       width: 42,
                       height: 1,
-                      background: "linear-gradient(90deg,transparent,#c9a24b)",
+                      background: "linear-gradient(90deg,transparent,var(--gold))",
                     }}
                   />
                   Barbearia &amp; Estética Masculina
@@ -471,7 +505,7 @@ export default function Page() {
                     style={{
                       width: 42,
                       height: 1,
-                      background: "linear-gradient(90deg,#c9a24b,transparent)",
+                      background: "linear-gradient(90deg,var(--gold),transparent)",
                     }}
                   />
                 </div>
@@ -483,7 +517,7 @@ export default function Page() {
                     fontSize: 62,
                     lineHeight: 0.95,
                     letterSpacing: ".06em",
-                    background: "linear-gradient(180deg,#f7e6b6,#d4af5e 45%,#9a7a36)",
+                    background: "linear-gradient(180deg,var(--gold-cream),var(--gold) 45%,var(--gold-deep))",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     color: "transparent",
@@ -497,9 +531,9 @@ export default function Page() {
                     alignItems: "center",
                     marginTop: 14,
                     padding: "7px 24px",
-                    border: "1px solid rgba(201,162,75,.45)",
+                    border: "1px solid rgba(var(--gold-rgb),.45)",
                     borderRadius: 4,
-                    color: "#e7c87e",
+                    color: "var(--gold-bright)",
                     fontFamily: CINZEL,
                     letterSpacing: ".42em",
                     fontSize: 14,
@@ -512,7 +546,7 @@ export default function Page() {
                   style={{
                     margin: "22px auto 0",
                     maxWidth: 560,
-                    color: "#b3ac9f",
+                    color: "var(--text-mut)",
                     fontSize: 14,
                     lineHeight: 1.7,
                   }}
@@ -527,7 +561,7 @@ export default function Page() {
                     justifyContent: "center",
                     gap: 24,
                     marginTop: 24,
-                    color: "#7c6a45",
+                    color: "var(--text-faint)",
                     fontSize: 10,
                     letterSpacing: ".3em",
                     textTransform: "uppercase",
@@ -539,7 +573,7 @@ export default function Page() {
                       width: 5,
                       height: 5,
                       transform: "rotate(45deg)",
-                      background: "#c9a24b",
+                      background: "var(--gold)",
                     }}
                   />
                   <span>em Serviço</span>
@@ -557,8 +591,8 @@ export default function Page() {
                     fontSize: 13.5,
                     fontWeight: 700,
                     letterSpacing: ".02em",
-                    color: "#1a160d",
-                    background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                    color: "var(--on-gold)",
+                    background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 10,
@@ -577,7 +611,7 @@ export default function Page() {
                     <div
                       style={{
                         fontFamily: CINZEL,
-                        color: "#c9a24b",
+                        color: "var(--gold)",
                         fontSize: 13,
                         letterSpacing: ".12em",
                         marginBottom: 6,
@@ -589,7 +623,7 @@ export default function Page() {
                       style={{
                         height: 1,
                         background:
-                          "linear-gradient(90deg,rgba(201,162,75,.3),transparent)",
+                          "linear-gradient(90deg,rgba(var(--gold-rgb),.3),transparent)",
                       }}
                     />
                   </div>
@@ -643,7 +677,7 @@ export default function Page() {
                         <span
                           style={{
                             fontFamily: CINZEL,
-                            color: "#c9a24b",
+                            color: "var(--gold)",
                             fontSize: 13,
                             letterSpacing: ".12em",
                           }}
@@ -653,10 +687,10 @@ export default function Page() {
                         <span
                           style={{
                             fontSize: 9.5,
-                            color: "#a98c4e",
+                            color: "var(--gold-deep)",
                             letterSpacing: ".14em",
                             textTransform: "uppercase",
-                            border: "1px solid rgba(201,162,75,.25)",
+                            border: "1px solid rgba(var(--gold-rgb),.25)",
                             padding: "2px 9px",
                             borderRadius: 20,
                           }}
@@ -672,7 +706,7 @@ export default function Page() {
                           cursor: "pointer",
                           fontSize: 22,
                           fontWeight: 700,
-                          color: "#efe9df",
+                          color: "var(--text)",
                           letterSpacing: "-.01em",
                         }}
                       >
@@ -692,7 +726,7 @@ export default function Page() {
                         className="lnk"
                         style={{
                           cursor: "pointer",
-                          color: "#c9a24b",
+                          color: "var(--gold)",
                           fontSize: 12.5,
                           letterSpacing: ".03em",
                           whiteSpace: "nowrap",
@@ -754,7 +788,7 @@ export default function Page() {
               className="lnk"
               style={{
                 cursor: "pointer",
-                color: "#8c867a",
+                color: "var(--text-dim)",
                 fontSize: 12.5,
                 letterSpacing: ".03em",
                 marginBottom: 20,
@@ -776,7 +810,7 @@ export default function Page() {
                 <div
                   style={{
                     fontFamily: CINZEL,
-                    color: "#c9a24b",
+                    color: "var(--gold)",
                     fontSize: 13,
                     letterSpacing: ".14em",
                     marginBottom: 10,
@@ -791,7 +825,7 @@ export default function Page() {
                     fontWeight: 800,
                     lineHeight: 1.12,
                     letterSpacing: "-.01em",
-                    color: "#f3eee4",
+                    color: "var(--text)",
                   }}
                 >
                   {am.title}
@@ -799,7 +833,7 @@ export default function Page() {
                 <p
                   style={{
                     margin: "0 0 22px",
-                    color: "#b3ac9f",
+                    color: "var(--text-mut)",
                     fontSize: 14.5,
                     lineHeight: 1.75,
                     maxWidth: 560,
@@ -841,14 +875,14 @@ export default function Page() {
                       style={{
                         height: "100%",
                         width: am.pctStyle,
-                        background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+                        background: "linear-gradient(90deg,var(--gold),var(--gold-light))",
                       }}
                     />
                   </div>
                   <div
                     style={{
                       fontSize: 12,
-                      color: "#c9a24b",
+                      color: "var(--gold)",
                       fontVariantNumeric: "tabular-nums",
                       whiteSpace: "nowrap",
                     }}
@@ -867,8 +901,8 @@ export default function Page() {
                     fontFamily: MANROPE,
                     fontSize: 14,
                     fontWeight: 700,
-                    color: "#1a160d",
-                    background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                    color: "var(--on-gold)",
+                    background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 9,
@@ -882,8 +916,8 @@ export default function Page() {
                   position: "relative",
                   borderRadius: 16,
                   overflow: "hidden",
-                  border: "1px solid rgba(201,162,75,.2)",
-                  background: "linear-gradient(135deg,#19140d,#0a0908)",
+                  border: "1px solid rgba(var(--gold-rgb),.2)",
+                  background: "linear-gradient(135deg,var(--surf),var(--bg))",
                   minHeight: 240,
                   display: "flex",
                   alignItems: "center",
@@ -895,7 +929,7 @@ export default function Page() {
                     position: "absolute",
                     inset: 0,
                     background:
-                      "repeating-linear-gradient(125deg, rgba(201,162,75,.05) 0 1px, transparent 1px 11px)",
+                      "repeating-linear-gradient(125deg, rgba(var(--gold-rgb),.05) 0 1px, transparent 1px 11px)",
                   }}
                 />
                 <div style={{ position: "relative", textAlign: "center" }}>
@@ -903,7 +937,7 @@ export default function Page() {
                     style={{
                       fontFamily: CINZEL,
                       fontSize: 84,
-                      color: "#c9a24b",
+                      color: "var(--gold)",
                       opacity: 0.22,
                       lineHeight: 1,
                     }}
@@ -916,7 +950,7 @@ export default function Page() {
                       fontFamily: "ui-monospace,monospace",
                       fontSize: 11,
                       letterSpacing: ".04em",
-                      color: "rgba(201,162,75,.6)",
+                      color: "rgba(var(--gold-rgb),.6)",
                     }}
                   >
                     capa · módulo {am.num}
@@ -928,7 +962,7 @@ export default function Page() {
             <div
               style={{
                 fontFamily: CINZEL,
-                color: "#c9a24b",
+                color: "var(--gold)",
                 fontSize: 13,
                 letterSpacing: ".12em",
                 marginBottom: 6,
@@ -939,7 +973,7 @@ export default function Page() {
             <div
               style={{
                 height: 1,
-                background: "linear-gradient(90deg,rgba(201,162,75,.3),transparent)",
+                background: "linear-gradient(90deg,rgba(var(--gold-rgb),.3),transparent)",
                 marginBottom: 22,
               }}
             />
@@ -974,7 +1008,7 @@ export default function Page() {
               className="lnk"
               style={{
                 cursor: "pointer",
-                color: "#8c867a",
+                color: "var(--text-dim)",
                 fontSize: 12.5,
                 marginBottom: 18,
                 display: "inline-block",
@@ -997,15 +1031,15 @@ export default function Page() {
                     aspectRatio: "16/9",
                     borderRadius: 14,
                     overflow: "hidden",
-                    border: "1px solid rgba(201,162,75,.2)",
-                    background: "linear-gradient(135deg,#16120c,#09080700)",
+                    border: "1px solid rgba(var(--gold-rgb),.2)",
+                    background: "linear-gradient(135deg,var(--surf),#09080700)",
                   }}
                 >
                   <div
                     style={{
                       position: "absolute",
                       inset: 0,
-                      background: "linear-gradient(135deg,#16120c,#0a0908)",
+                      background: "linear-gradient(135deg,var(--surf),var(--bg))",
                     }}
                   />
                   <div
@@ -1013,7 +1047,7 @@ export default function Page() {
                       position: "absolute",
                       inset: 0,
                       background:
-                        "repeating-linear-gradient(125deg, rgba(201,162,75,.045) 0 1px, transparent 1px 12px)",
+                        "repeating-linear-gradient(125deg, rgba(var(--gold-rgb),.045) 0 1px, transparent 1px 12px)",
                     }}
                   />
                   <div
@@ -1032,7 +1066,7 @@ export default function Page() {
                         width: 80,
                         height: 80,
                         borderRadius: "50%",
-                        background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                        background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -1044,7 +1078,7 @@ export default function Page() {
                         style={{
                           width: 0,
                           height: 0,
-                          borderLeft: "24px solid #1a160d",
+                          borderLeft: "24px solid var(--on-gold)",
                           borderTop: "15px solid transparent",
                           borderBottom: "15px solid transparent",
                           marginLeft: 6,
@@ -1056,7 +1090,7 @@ export default function Page() {
                         fontFamily: "ui-monospace,monospace",
                         fontSize: 11,
                         letterSpacing: ".04em",
-                        color: "rgba(201,162,75,.6)",
+                        color: "rgba(var(--gold-rgb),.6)",
                       }}
                     >
                       player · {al.caption}
@@ -1084,7 +1118,7 @@ export default function Page() {
                         style={{
                           height: "100%",
                           width: al.progStyle,
-                          background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+                          background: "linear-gradient(90deg,var(--gold),var(--gold-light))",
                         }}
                       />
                     </div>
@@ -1094,7 +1128,7 @@ export default function Page() {
                         justifyContent: "space-between",
                         marginTop: 8,
                         fontSize: 11,
-                        color: "#cabfa6",
+                        color: "var(--text-soft)",
                         fontVariantNumeric: "tabular-nums",
                       }}
                     >
@@ -1119,7 +1153,7 @@ export default function Page() {
                       style={{
                         fontSize: 11,
                         letterSpacing: ".14em",
-                        color: "#c9a24b",
+                        color: "var(--gold)",
                         textTransform: "uppercase",
                         marginBottom: 8,
                       }}
@@ -1133,7 +1167,7 @@ export default function Page() {
                         fontWeight: 800,
                         lineHeight: 1.2,
                         letterSpacing: "-.01em",
-                        color: "#f3eee4",
+                        color: "var(--text)",
                       }}
                     >
                       {al.title}
@@ -1151,8 +1185,8 @@ export default function Page() {
                         fontFamily: MANROPE,
                         fontSize: 13,
                         fontWeight: 700,
-                        color: "#1a160d",
-                        background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                        color: "var(--on-gold)",
+                        background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
                       }}
                     >
                       {al.completeLabel}
@@ -1168,7 +1202,7 @@ export default function Page() {
                         fontWeight: 600,
                         color: al.favColor,
                         background: "rgba(255,255,255,.03)",
-                        border: "1px solid rgba(201,162,75,.28)",
+                        border: "1px solid rgba(var(--gold-rgb),.28)",
                       }}
                     >
                       ★ {al.favLabel}
@@ -1183,8 +1217,8 @@ export default function Page() {
                     gap: 11,
                     marginTop: 18,
                     padding: "14px 0",
-                    borderTop: "1px solid rgba(201,162,75,.12)",
-                    borderBottom: "1px solid rgba(201,162,75,.12)",
+                    borderTop: "1px solid rgba(var(--gold-rgb),.12)",
+                    borderBottom: "1px solid rgba(var(--gold-rgb),.12)",
                   }}
                 >
                   <div
@@ -1198,17 +1232,17 @@ export default function Page() {
                       justifyContent: "center",
                       fontFamily: CINZEL,
                       fontSize: 13,
-                      color: "#1a160d",
-                      background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                      color: "var(--on-gold)",
+                      background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
                     }}
                   >
                     GO
                   </div>
                   <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: "#efe9df" }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text)" }}>
                       Gustavo Ornellas
                     </div>
-                    <div style={{ fontSize: 11.5, color: "#8c867a" }}>
+                    <div style={{ fontSize: 11.5, color: "var(--text-dim)" }}>
                       Mentor · Estúdio Ornellas
                     </div>
                   </div>
@@ -1217,7 +1251,7 @@ export default function Page() {
                 <p
                   style={{
                     margin: "20px 0 0",
-                    color: "#b3ac9f",
+                    color: "var(--text-mut)",
                     fontSize: 14.5,
                     lineHeight: 1.8,
                     maxWidth: 680,
@@ -1235,39 +1269,39 @@ export default function Page() {
                   }}
                 >
                   <div style={materialBtn}>
-                    <span style={{ color: "#c9a24b" }}>⤓</span> Material em PDF
+                    <span style={{ color: "var(--gold)" }}>⤓</span> Material em PDF
                   </div>
                   <div style={materialBtn}>
-                    <span style={{ color: "#c9a24b" }}>◆</span> Tirar dúvida no grupo
+                    <span style={{ color: "var(--gold)" }}>◆</span> Tirar dúvida no grupo
                   </div>
                 </div>
               </div>
 
               <div
                 style={{
-                  border: "1px solid rgba(201,162,75,.16)",
+                  border: "1px solid rgba(var(--gold-rgb),.16)",
                   borderRadius: 14,
-                  background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                  background: "linear-gradient(180deg,var(--surf),var(--bg))",
                   overflow: "hidden",
                 }}
               >
                 <div
                   style={{
                     padding: "16px 16px 12px",
-                    borderBottom: "1px solid rgba(201,162,75,.12)",
+                    borderBottom: "1px solid rgba(var(--gold-rgb),.12)",
                   }}
                 >
                   <div
                     style={{
                       fontFamily: CINZEL,
-                      color: "#c9a24b",
+                      color: "var(--gold)",
                       fontSize: 12,
                       letterSpacing: ".1em",
                     }}
                   >
                     CONTEÚDO DO MÓDULO
                   </div>
-                  <div style={{ fontSize: 12, color: "#8c867a", marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 4 }}>
                     {am.countLabel} · {am.pct}% concluído
                   </div>
                 </div>
@@ -1301,8 +1335,8 @@ export default function Page() {
                           flex: "0 0 100px",
                           aspectRatio: "16/9",
                           borderRadius: 7,
-                          background: "linear-gradient(135deg,#191510,#0c0b0a)",
-                          border: "1px solid rgba(201,162,75,.14)",
+                          background: "linear-gradient(135deg,var(--thumb1),var(--thumb2))",
+                          border: "1px solid rgba(var(--gold-rgb),.14)",
                           position: "relative",
                           overflow: "hidden",
                           display: "flex",
@@ -1313,7 +1347,7 @@ export default function Page() {
                         <span
                           style={{
                             fontFamily: CINZEL,
-                            color: "#c9a24b",
+                            color: "var(--gold)",
                             opacity: 0.3,
                             fontSize: 17,
                           }}
@@ -1334,7 +1368,7 @@ export default function Page() {
                             style={{
                               height: "100%",
                               width: item.progStyle,
-                              background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+                              background: "linear-gradient(90deg,var(--gold),var(--gold-light))",
                             }}
                           />
                         </div>
@@ -1358,7 +1392,7 @@ export default function Page() {
                         >
                           {item.title}
                         </div>
-                        <div style={{ fontSize: 11, color: "#8c867a", marginTop: 3 }}>
+                        <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 3 }}>
                           {item.statusLabel}
                         </div>
                       </div>
@@ -1376,7 +1410,7 @@ export default function Page() {
             <div
               style={{
                 fontFamily: CINZEL,
-                color: "#c9a24b",
+                color: "var(--gold)",
                 fontSize: 13,
                 letterSpacing: ".14em",
                 marginBottom: 8,
@@ -1384,10 +1418,10 @@ export default function Page() {
             >
               SUA SELEÇÃO
             </div>
-            <h1 style={{ margin: "0 0 4px", fontSize: 30, fontWeight: 800, color: "#f3eee4" }}>
+            <h1 style={{ margin: "0 0 4px", fontSize: 30, fontWeight: 800, color: "var(--text)" }}>
               Aulas favoritas
             </h1>
-            <p style={{ margin: "0 0 26px", color: "#8c867a", fontSize: 13.5 }}>
+            <p style={{ margin: "0 0 26px", color: "var(--text-dim)", fontSize: 13.5 }}>
               Aulas que você marcou com ★ para assistir depois.
             </p>
             {favList.length > 0 ? (
@@ -1414,17 +1448,17 @@ export default function Page() {
             ) : (
               <div
                 style={{
-                  border: "1px dashed rgba(201,162,75,.28)",
+                  border: "1px dashed rgba(var(--gold-rgb),.28)",
                   borderRadius: 14,
                   padding: "60px 24px",
                   textAlign: "center",
-                  color: "#8c867a",
+                  color: "var(--text-dim)",
                 }}
               >
                 <div
                   style={{
                     fontSize: 30,
-                    color: "#c9a24b",
+                    color: "var(--gold)",
                     opacity: 0.5,
                     marginBottom: 10,
                   }}
@@ -1446,7 +1480,7 @@ export default function Page() {
             <div
               style={{
                 fontFamily: CINZEL,
-                color: "#c9a24b",
+                color: "var(--gold)",
                 fontSize: 13,
                 letterSpacing: ".14em",
                 marginBottom: 8,
@@ -1459,12 +1493,12 @@ export default function Page() {
                 margin: "0 0 4px",
                 fontSize: 30,
                 fontWeight: 800,
-                color: "#f3eee4",
+                color: "var(--text)",
               }}
             >
               Mentorias presenciais
             </h1>
-            <p style={{ margin: "0 0 30px", color: "#8c867a", fontSize: 13.5, maxWidth: 620 }}>
+            <p style={{ margin: "0 0 30px", color: "var(--text-dim)", fontSize: 13.5, maxWidth: 620 }}>
               Formações intensivas com {STUDIO.mentor}, no {STUDIO.name} — conteúdo prático,
               dinâmico e voltado para resultado.
             </p>
@@ -1481,9 +1515,9 @@ export default function Page() {
                 <div
                   key={c.id}
                   style={{
-                    border: "1px solid rgba(201,162,75,.2)",
+                    border: "1px solid rgba(var(--gold-rgb),.2)",
                     borderRadius: 16,
-                    background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                    background: "linear-gradient(180deg,var(--surf),var(--bg))",
                     padding: "26px 26px 24px",
                     display: "flex",
                     flexDirection: "column",
@@ -1497,9 +1531,9 @@ export default function Page() {
                       gap: 7,
                       fontSize: 9.5,
                       letterSpacing: ".18em",
-                      color: "#c9a24b",
+                      color: "var(--gold)",
                       textTransform: "uppercase",
-                      border: "1px solid rgba(201,162,75,.25)",
+                      border: "1px solid rgba(var(--gold-rgb),.25)",
                       padding: "5px 11px",
                       borderRadius: 20,
                       marginBottom: 14,
@@ -1510,7 +1544,7 @@ export default function Page() {
                         width: 6,
                         height: 6,
                         transform: "rotate(45deg)",
-                        background: "#e7c87e",
+                        background: "var(--gold-bright)",
                       }}
                     />
                     {c.kicker}
@@ -1521,7 +1555,7 @@ export default function Page() {
                       fontSize: 22,
                       fontWeight: 800,
                       lineHeight: 1.2,
-                      color: "#f3eee4",
+                      color: "var(--text)",
                       letterSpacing: "-.01em",
                     }}
                   >
@@ -1530,7 +1564,7 @@ export default function Page() {
                   <div
                     style={{
                       fontSize: 12,
-                      color: "#e7c87e",
+                      color: "var(--gold-bright)",
                       letterSpacing: ".02em",
                       marginBottom: 14,
                     }}
@@ -1540,7 +1574,7 @@ export default function Page() {
                   <p
                     style={{
                       margin: "0 0 18px",
-                      color: "#b3ac9f",
+                      color: "var(--text-mut)",
                       fontSize: 14,
                       lineHeight: 1.7,
                     }}
@@ -1553,7 +1587,7 @@ export default function Page() {
                       <div
                         style={{
                           fontFamily: CINZEL,
-                          color: "#c9a24b",
+                          color: "var(--gold)",
                           fontSize: 12.5,
                           letterSpacing: ".08em",
                           marginBottom: 9,
@@ -1570,7 +1604,7 @@ export default function Page() {
                               gap: 10,
                               alignItems: "flex-start",
                               fontSize: 13,
-                              color: "#d8cdb6",
+                              color: "var(--text-soft)",
                               lineHeight: 1.5,
                             }}
                           >
@@ -1581,7 +1615,7 @@ export default function Page() {
                                 height: 5,
                                 flexShrink: 0,
                                 transform: "rotate(45deg)",
-                                background: "#c9a24b",
+                                background: "var(--gold)",
                               }}
                             />
                             {it}
@@ -1599,17 +1633,17 @@ export default function Page() {
                         alignItems: "center",
                         padding: "12px 14px",
                         borderRadius: 10,
-                        border: "1px solid rgba(201,162,75,.28)",
+                        border: "1px solid rgba(var(--gold-rgb),.28)",
                         background:
-                          "radial-gradient(120% 120% at 0% 0%, rgba(201,162,75,.12), transparent 60%)",
-                        color: "#efe9df",
+                          "radial-gradient(120% 120% at 0% 0%, rgba(var(--gold-rgb),.12), transparent 60%)",
+                        color: "var(--text)",
                         fontSize: 13,
                         marginBottom: 16,
                       }}
                     >
-                      <span style={{ color: "#e7c87e", fontSize: 15 }}>★</span>
+                      <span style={{ color: "var(--gold-bright)", fontSize: 15 }}>★</span>
                       <span>
-                        <b style={{ color: "#e7c87e" }}>Bônus:</b> {c.bonus}
+                        <b style={{ color: "var(--gold-bright)" }}>Bônus:</b> {c.bonus}
                       </span>
                     </div>
                   )}
@@ -1619,7 +1653,7 @@ export default function Page() {
                       style={{
                         height: 1,
                         background:
-                          "linear-gradient(90deg,rgba(201,162,75,.3),transparent)",
+                          "linear-gradient(90deg,rgba(var(--gold-rgb),.3),transparent)",
                         margin: "6px 0 16px",
                       }}
                     />
@@ -1637,7 +1671,7 @@ export default function Page() {
                           style={{
                             fontSize: 10,
                             letterSpacing: ".14em",
-                            color: "#8c867a",
+                            color: "var(--text-dim)",
                             textTransform: "uppercase",
                             marginBottom: 4,
                           }}
@@ -1649,13 +1683,13 @@ export default function Page() {
                             fontFamily: CINZEL,
                             fontSize: 28,
                             fontWeight: 700,
-                            color: "#f3dca0",
+                            color: "var(--gold-light)",
                             lineHeight: 1,
                           }}
                         >
                           {c.price}
                         </div>
-                        <div style={{ fontSize: 12, color: "#b3ac9f", marginTop: 5 }}>
+                        <div style={{ fontSize: 12, color: "var(--text-mut)", marginTop: 5 }}>
                           {c.installments}
                         </div>
                       </div>
@@ -1670,8 +1704,8 @@ export default function Page() {
                           fontFamily: MANROPE,
                           fontSize: 13.5,
                           fontWeight: 700,
-                          color: "#1a160d",
-                          background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                          color: "var(--on-gold)",
+                          background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -1679,7 +1713,7 @@ export default function Page() {
                       </button>
                     </div>
                     {c.includes && (
-                      <div style={{ fontSize: 11.5, color: "#8c867a", marginTop: 14 }}>
+                      <div style={{ fontSize: 11.5, color: "var(--text-dim)", marginTop: 14 }}>
                         {c.includes}
                       </div>
                     )}
@@ -1691,9 +1725,9 @@ export default function Page() {
             {/* CONTATO / ESTÚDIO */}
             <div
               style={{
-                border: "1px solid rgba(201,162,75,.16)",
+                border: "1px solid rgba(var(--gold-rgb),.16)",
                 borderRadius: 16,
-                background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                background: "linear-gradient(180deg,var(--surf),var(--bg))",
                 padding: 24,
                 display: "grid",
                 gridTemplateColumns: "1fr auto",
@@ -1705,7 +1739,7 @@ export default function Page() {
                 <div
                   style={{
                     fontFamily: CINZEL,
-                    color: "#c9a24b",
+                    color: "var(--gold)",
                     fontSize: 12.5,
                     letterSpacing: ".1em",
                     marginBottom: 10,
@@ -1718,7 +1752,7 @@ export default function Page() {
                     key={i}
                     style={{
                       fontSize: 13,
-                      color: i === 0 ? "#efe9df" : "#8c867a",
+                      color: i === 0 ? "var(--text)" : "var(--text-dim)",
                       fontWeight: i === 0 ? 600 : 400,
                       lineHeight: 1.6,
                     }}
@@ -1758,8 +1792,8 @@ export default function Page() {
                   fontFamily: MANROPE,
                   fontSize: 14,
                   fontWeight: 700,
-                  color: "#1a160d",
-                  background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                  color: "var(--on-gold)",
+                  background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -1775,7 +1809,7 @@ export default function Page() {
             <div
               style={{
                 fontFamily: CINZEL,
-                color: "#c9a24b",
+                color: "var(--gold)",
                 fontSize: 13,
                 letterSpacing: ".14em",
                 marginBottom: 8,
@@ -1783,14 +1817,14 @@ export default function Page() {
             >
               CONTA
             </div>
-            <h1 style={{ margin: "0 0 26px", fontSize: 30, fontWeight: 800, color: "#f3eee4" }}>
+            <h1 style={{ margin: "0 0 26px", fontSize: 30, fontWeight: 800, color: "var(--text)" }}>
               Configurações
             </h1>
             <div
               style={{
-                border: "1px solid rgba(201,162,75,.16)",
+                border: "1px solid rgba(var(--gold-rgb),.16)",
                 borderRadius: 14,
-                background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                background: "linear-gradient(180deg,var(--surf),var(--bg))",
                 padding: 22,
                 marginBottom: 18,
               }}
@@ -1799,7 +1833,7 @@ export default function Page() {
                 style={{
                   fontSize: 12,
                   letterSpacing: ".12em",
-                  color: "#c9a24b",
+                  color: "var(--gold)",
                   textTransform: "uppercase",
                   marginBottom: 16,
                 }}
@@ -1815,15 +1849,15 @@ export default function Page() {
               >
                 <Field label="Nome" value={USER.fullName} />
                 <Field label="E-mail" value={USER.email} />
-                <Field label="Plano" value={USER.plan} valueColor="#e7c87e" />
+                <Field label="Plano" value={USER.plan} valueColor="var(--gold-bright)" />
                 <Field label="Membro desde" value={USER.since} />
               </div>
             </div>
             <div
               style={{
-                border: "1px solid rgba(201,162,75,.16)",
+                border: "1px solid rgba(var(--gold-rgb),.16)",
                 borderRadius: 14,
-                background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                background: "linear-gradient(180deg,var(--surf),var(--bg))",
                 padding: 22,
               }}
             >
@@ -1831,7 +1865,7 @@ export default function Page() {
                 style={{
                   fontSize: 12,
                   letterSpacing: ".12em",
-                  color: "#c9a24b",
+                  color: "var(--gold)",
                   textTransform: "uppercase",
                   marginBottom: 8,
                 }}
@@ -1859,9 +1893,9 @@ const arrowBtn = {
   width: 34,
   height: 34,
   borderRadius: "50%",
-  border: "1px solid rgba(201,162,75,.25)",
+  border: "1px solid rgba(var(--gold-rgb),.25)",
   background: "rgba(255,255,255,.02)",
-  color: "#c9a24b",
+  color: "var(--gold)",
   cursor: "pointer",
   fontSize: 16,
   lineHeight: 1,
@@ -1869,19 +1903,34 @@ const arrowBtn = {
 
 const pill = {
   fontSize: 11.5,
-  color: "#d8cdb6",
-  border: "1px solid rgba(201,162,75,.22)",
+  color: "var(--text-soft)",
+  border: "1px solid rgba(var(--gold-rgb),.22)",
   padding: "6px 12px",
   borderRadius: 20,
 };
+
+function segStyle(active) {
+  return {
+    padding: "4px 11px",
+    borderRadius: 16,
+    fontSize: 10.5,
+    letterSpacing: ".08em",
+    textTransform: "uppercase",
+    fontWeight: 700,
+    color: active ? "var(--on-gold)" : "var(--text-dim)",
+    background: active
+      ? "linear-gradient(180deg,var(--gold-light),var(--gold))"
+      : "transparent",
+  };
+}
 
 const socialBtn = {
   cursor: "pointer",
   padding: "8px 14px",
   borderRadius: 20,
-  border: "1px solid rgba(201,162,75,.28)",
+  border: "1px solid rgba(var(--gold-rgb),.28)",
   background: "rgba(255,255,255,.02)",
-  color: "#d8cdb6",
+  color: "var(--text-soft)",
   fontSize: 12.5,
   fontFamily: "var(--font-manrope), sans-serif",
 };
@@ -1892,21 +1941,21 @@ const materialBtn = {
   gap: 9,
   padding: "11px 16px",
   borderRadius: 10,
-  border: "1px solid rgba(201,162,75,.22)",
+  border: "1px solid rgba(var(--gold-rgb),.22)",
   background: "rgba(255,255,255,.02)",
-  color: "#d8cdb6",
+  color: "var(--text-soft)",
   fontSize: 13,
   cursor: "pointer",
 };
 
-function Field({ label, value, valueColor = "#efe9df" }) {
+function Field({ label, value, valueColor = "var(--text)" }) {
   return (
     <div>
-      <div style={{ fontSize: 11, color: "#8c867a", marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 6 }}>{label}</div>
       <div
         style={{
           padding: "11px 13px",
-          border: "1px solid rgba(201,162,75,.18)",
+          border: "1px solid rgba(var(--gold-rgb),.18)",
           borderRadius: 9,
           background: "rgba(255,255,255,.02)",
           fontSize: 13.5,
@@ -1927,19 +1976,19 @@ function Toggle({ title, sub, border }) {
         alignItems: "center",
         justifyContent: "space-between",
         padding: "14px 0",
-        ...(border ? { borderBottom: "1px solid rgba(201,162,75,.1)" } : {}),
+        ...(border ? { borderBottom: "1px solid rgba(var(--gold-rgb),.1)" } : {}),
       }}
     >
       <div>
-        <div style={{ fontSize: 13.5, color: "#efe9df", fontWeight: 600 }}>{title}</div>
-        <div style={{ fontSize: 11.5, color: "#8c867a" }}>{sub}</div>
+        <div style={{ fontSize: 13.5, color: "var(--text)", fontWeight: 600 }}>{title}</div>
+        <div style={{ fontSize: 11.5, color: "var(--text-dim)" }}>{sub}</div>
       </div>
       <div
         style={{
           width: 42,
           height: 24,
           borderRadius: 20,
-          background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+          background: "linear-gradient(90deg,var(--gold),var(--gold-light))",
           position: "relative",
         }}
       >
@@ -1951,7 +2000,7 @@ function Toggle({ title, sub, border }) {
             width: 18,
             height: 18,
             borderRadius: "50%",
-            background: "#1a160d",
+            background: "var(--on-gold)",
           }}
         />
       </div>

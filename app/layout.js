@@ -1,4 +1,4 @@
-import { Cinzel, Manrope } from "next/font/google";
+import { Cinzel, Manrope, Oswald } from "next/font/google";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -15,6 +15,14 @@ const manrope = Manrope({
   display: "swap",
 });
 
+// Fonte condensada para o tema "Visagista" (títulos bold/black, caixa alta).
+const oswald = Oswald({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-oswald",
+  display: "swap",
+});
+
 export const metadata = {
   title: "Área de Membros · Ornellas Barbeiro",
   description:
@@ -28,7 +36,10 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-BR" className={`${cinzel.variable} ${manrope.variable}`}>
+    <html
+      lang="pt-BR"
+      className={`${cinzel.variable} ${manrope.variable} ${oswald.variable}`}
+    >
       <body>{children}</body>
     </html>
   );

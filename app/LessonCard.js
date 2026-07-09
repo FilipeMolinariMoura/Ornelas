@@ -1,6 +1,6 @@
 "use client";
 
-const CINZEL = "var(--font-cinzel), serif";
+const CINZEL = "var(--font-title), serif";
 
 // Cartão de aula reutilizado em Home, Módulo e Favoritas.
 // `basis` define a largura fixa (linhas com scroll) ou fica null (grades).
@@ -29,19 +29,55 @@ export default function LessonCard({
           aspectRatio: "16/9",
           borderRadius: 12,
           overflow: "hidden",
-          border: "1px solid rgba(201,162,75,.16)",
-          background: "linear-gradient(135deg,#191510,#0c0b0a)",
+          border: "1px solid rgba(var(--gold-rgb),.16)",
+          background: "linear-gradient(135deg,var(--thumb1),var(--thumb2))",
           transition: "border-color .25s ease,box-shadow .25s ease",
         }}
       >
+        {/* Foto real (opcional): defina `img` na aula em data.js */}
+        {lesson.img && (
+          <>
+            <img
+              src={lesson.img}
+              alt={lesson.title}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "saturate(1.05) contrast(1.05)",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55))",
+              }}
+            />
+          </>
+        )}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "repeating-linear-gradient(125deg, rgba(201,162,75,.05) 0 1px, transparent 1px 9px)",
+              "repeating-linear-gradient(125deg, rgba(var(--gold-rgb),.05) 0 1px, transparent 1px 9px)",
           }}
         />
+        {/* Luz direcional (chiaroscuro) — identidade Ornellas */}
+        {!lesson.img && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "radial-gradient(80% 60% at 50% 24%, rgba(var(--gold-rgb),.16), transparent 62%)",
+            }}
+          />
+        )}
         <div
           className="lc-num"
           style={{
@@ -52,7 +88,7 @@ export default function LessonCard({
             justifyContent: "center",
             fontFamily: CINZEL,
             fontSize: 56,
-            color: "#c9a24b",
+            color: "var(--gold)",
             opacity: 0.1,
             transition: "opacity .25s ease",
           }}
@@ -65,8 +101,8 @@ export default function LessonCard({
             top: 10,
             right: 10,
             background: "rgba(8,7,6,.7)",
-            border: "1px solid rgba(201,162,75,.2)",
-            color: "#d8cdb6",
+            border: "1px solid rgba(var(--gold-rgb),.2)",
+            color: "var(--text-soft)",
             fontSize: 11,
             letterSpacing: ".04em",
             padding: "3px 8px",
@@ -103,12 +139,30 @@ export default function LessonCard({
               fontFamily: "ui-monospace,'SFMono-Regular',monospace",
               fontSize: 10,
               letterSpacing: ".02em",
-              color: "rgba(201,162,75,.62)",
+              color: "rgba(var(--gold-rgb),.62)",
             }}
           >
             {lesson.caption}
           </div>
         )}
+        {/* Selo de marca */}
+        <div
+          style={{
+            position: "absolute",
+            right: 11,
+            bottom: 11,
+            fontFamily: CINZEL,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: ".24em",
+            color: "var(--gold)",
+            opacity: 0.72,
+            textShadow: "0 1px 4px rgba(0,0,0,.7)",
+            pointerEvents: "none",
+          }}
+        >
+          ORNELLAS
+        </div>
         <div
           className="lc-overlay"
           style={{
@@ -128,7 +182,7 @@ export default function LessonCard({
               width: 52,
               height: 52,
               borderRadius: "50%",
-              background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+              background: "linear-gradient(180deg,var(--gold-light),var(--gold))",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -139,7 +193,7 @@ export default function LessonCard({
               style={{
                 width: 0,
                 height: 0,
-                borderLeft: "15px solid #1a160d",
+                borderLeft: "15px solid var(--on-gold)",
                 borderTop: "9px solid transparent",
                 borderBottom: "9px solid transparent",
                 marginLeft: 4,
@@ -162,7 +216,7 @@ export default function LessonCard({
               style={{
                 height: "100%",
                 width: lesson.progStyle,
-                background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+                background: "linear-gradient(90deg,var(--gold),var(--gold-light))",
               }}
             />
           </div>
@@ -173,7 +227,7 @@ export default function LessonCard({
           style={{
             fontSize: 10,
             letterSpacing: ".14em",
-            color: "#8c867a",
+            color: "var(--text-dim)",
             textTransform: "uppercase",
             marginBottom: 4,
           }}
@@ -184,7 +238,7 @@ export default function LessonCard({
           style={{
             fontSize: 14,
             fontWeight: 600,
-            color: "#ece7dd",
+            color: "var(--text)",
             lineHeight: 1.3,
           }}
         >
