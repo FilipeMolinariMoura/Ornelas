@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { MODULES, USER, INITIAL_FAVS } from "./data";
+import { MODULES, MENTORIAS, STUDIO, USER, INITIAL_FAVS } from "./data";
 import LessonCard from "./LessonCard";
 
 const CINZEL = "var(--font-cinzel), serif";
@@ -44,7 +44,18 @@ export default function Page() {
     setNav("cfg");
     toTop();
   };
-  const selectExt = (k) => setNav(k);
+  const openMentorias = () => {
+    setScreen("mentorias");
+    setNav("mentorias");
+    toTop();
+  };
+  const openExt = (url) => {
+    if (typeof window !== "undefined") window.open(url, "_blank", "noopener");
+  };
+  const waLink = (mentoria) =>
+    `https://wa.me/${STUDIO.whatsapp}?text=${encodeURIComponent(
+      `Olá! Tenho interesse na ${mentoria}. Pode me passar as informações e as próximas turmas?`
+    )}`;
   const openModule = (id) => {
     setScreen("module");
     setModuleId(id);
@@ -146,9 +157,10 @@ export default function Page() {
 
   const navItems = [
     { key: "home", label: "Página inicial", onClick: goHome },
+    { key: "mentorias", label: "Mentorias presenciais", onClick: openMentorias },
     { key: "fav", label: "Aulas favoritas", onClick: openFav },
-    { key: "yt", label: "Canal no YouTube", onClick: () => selectExt("yt") },
-    { key: "ig", label: "Instagram", onClick: () => selectExt("ig") },
+    { key: "yt", label: "Canal no YouTube", onClick: () => openExt(STUDIO.youtube) },
+    { key: "ig", label: "Instagram", onClick: () => openExt(STUDIO.instagramVisagista) },
     { key: "cfg", label: "Configurações", onClick: openConfig },
   ];
 
@@ -263,11 +275,13 @@ export default function Page() {
         </nav>
 
         <div
+          onClick={openMentorias}
           style={{
             margin: "6px 18px 18px",
             padding: 14,
             border: "1px solid rgba(201,162,75,.2)",
             borderRadius: 12,
+            cursor: "pointer",
             background:
               "radial-gradient(120% 120% at 0% 0%, rgba(201,162,75,.1), transparent 60%)",
           }}
@@ -292,13 +306,13 @@ export default function Page() {
                 boxShadow: "0 0 0 3px rgba(231,200,126,.18)",
               }}
             />
-            Ao vivo em breve
+            Matrículas abertas
           </div>
           <div style={{ marginTop: 9, fontSize: 13, fontWeight: 600, color: "#efe9df" }}>
-            Mentoria ao vivo
+            Mentorias presenciais
           </div>
           <div style={{ marginTop: 3, fontSize: 11.5, color: "#8c867a" }}>
-            Quinta · 20h · Sala Ornellas
+            4 segundas · 9h–16h · Barra da Tijuca
           </div>
         </div>
 
@@ -530,6 +544,29 @@ export default function Page() {
                   />
                   <span>em Serviço</span>
                 </div>
+                <button
+                  className="gbtn"
+                  onClick={openMentorias}
+                  style={{
+                    marginTop: 28,
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "13px 28px",
+                    borderRadius: 10,
+                    fontFamily: MANROPE,
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    letterSpacing: ".02em",
+                    color: "#1a160d",
+                    background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  Matrículas abertas · Mentorias presenciais
+                  <span style={{ fontSize: 15 }}>›</span>
+                </button>
               </div>
             </section>
 
@@ -1403,6 +1440,335 @@ export default function Page() {
           </div>
         )}
 
+        {/* MENTORIAS PRESENCIAIS */}
+        {screen === "mentorias" && (
+          <div className="scr" style={{ padding: "30px 48px 60px" }}>
+            <div
+              style={{
+                fontFamily: CINZEL,
+                color: "#c9a24b",
+                fontSize: 13,
+                letterSpacing: ".14em",
+                marginBottom: 8,
+              }}
+            >
+              MATRÍCULAS ABERTAS
+            </div>
+            <h1
+              style={{
+                margin: "0 0 4px",
+                fontSize: 30,
+                fontWeight: 800,
+                color: "#f3eee4",
+              }}
+            >
+              Mentorias presenciais
+            </h1>
+            <p style={{ margin: "0 0 30px", color: "#8c867a", fontSize: 13.5, maxWidth: 620 }}>
+              Formações intensivas com {STUDIO.mentor}, no {STUDIO.name} — conteúdo prático,
+              dinâmico e voltado para resultado.
+            </p>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(420px,1fr))",
+                gap: 24,
+                marginBottom: 30,
+              }}
+            >
+              {MENTORIAS.map((c) => (
+                <div
+                  key={c.id}
+                  style={{
+                    border: "1px solid rgba(201,162,75,.2)",
+                    borderRadius: 16,
+                    background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                    padding: "26px 26px 24px",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignSelf: "flex-start",
+                      alignItems: "center",
+                      gap: 7,
+                      fontSize: 9.5,
+                      letterSpacing: ".18em",
+                      color: "#c9a24b",
+                      textTransform: "uppercase",
+                      border: "1px solid rgba(201,162,75,.25)",
+                      padding: "5px 11px",
+                      borderRadius: 20,
+                      marginBottom: 14,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 6,
+                        height: 6,
+                        transform: "rotate(45deg)",
+                        background: "#e7c87e",
+                      }}
+                    />
+                    {c.kicker}
+                  </div>
+                  <h2
+                    style={{
+                      margin: "0 0 8px",
+                      fontSize: 22,
+                      fontWeight: 800,
+                      lineHeight: 1.2,
+                      color: "#f3eee4",
+                      letterSpacing: "-.01em",
+                    }}
+                  >
+                    {c.title}
+                  </h2>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#e7c87e",
+                      letterSpacing: ".02em",
+                      marginBottom: 14,
+                    }}
+                  >
+                    {c.format}
+                  </div>
+                  <p
+                    style={{
+                      margin: "0 0 18px",
+                      color: "#b3ac9f",
+                      fontSize: 14,
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    {c.lead}
+                  </p>
+
+                  {c.sections.map((sec) => (
+                    <div key={sec.title} style={{ marginBottom: 16 }}>
+                      <div
+                        style={{
+                          fontFamily: CINZEL,
+                          color: "#c9a24b",
+                          fontSize: 12.5,
+                          letterSpacing: ".08em",
+                          marginBottom: 9,
+                        }}
+                      >
+                        {sec.title}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                        {sec.items.map((it, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              display: "flex",
+                              gap: 10,
+                              alignItems: "flex-start",
+                              fontSize: 13,
+                              color: "#d8cdb6",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            <span
+                              style={{
+                                marginTop: 6,
+                                width: 5,
+                                height: 5,
+                                flexShrink: 0,
+                                transform: "rotate(45deg)",
+                                background: "#c9a24b",
+                              }}
+                            />
+                            {it}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  {c.bonus && (
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        alignItems: "center",
+                        padding: "12px 14px",
+                        borderRadius: 10,
+                        border: "1px solid rgba(201,162,75,.28)",
+                        background:
+                          "radial-gradient(120% 120% at 0% 0%, rgba(201,162,75,.12), transparent 60%)",
+                        color: "#efe9df",
+                        fontSize: 13,
+                        marginBottom: 16,
+                      }}
+                    >
+                      <span style={{ color: "#e7c87e", fontSize: 15 }}>★</span>
+                      <span>
+                        <b style={{ color: "#e7c87e" }}>Bônus:</b> {c.bonus}
+                      </span>
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: "auto" }}>
+                    <div
+                      style={{
+                        height: 1,
+                        background:
+                          "linear-gradient(90deg,rgba(201,162,75,.3),transparent)",
+                        margin: "6px 0 16px",
+                      }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-end",
+                        justifyContent: "space-between",
+                        gap: 16,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            letterSpacing: ".14em",
+                            color: "#8c867a",
+                            textTransform: "uppercase",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Investimento
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: CINZEL,
+                            fontSize: 28,
+                            fontWeight: 700,
+                            color: "#f3dca0",
+                            lineHeight: 1,
+                          }}
+                        >
+                          {c.price}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#b3ac9f", marginTop: 5 }}>
+                          {c.installments}
+                        </div>
+                      </div>
+                      <button
+                        className="gbtn"
+                        onClick={() => openExt(waLink(c.title))}
+                        style={{
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "13px 22px",
+                          borderRadius: 10,
+                          fontFamily: MANROPE,
+                          fontSize: 13.5,
+                          fontWeight: 700,
+                          color: "#1a160d",
+                          background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Garantir vaga no WhatsApp
+                      </button>
+                    </div>
+                    {c.includes && (
+                      <div style={{ fontSize: 11.5, color: "#8c867a", marginTop: 14 }}>
+                        {c.includes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CONTATO / ESTÚDIO */}
+            <div
+              style={{
+                border: "1px solid rgba(201,162,75,.16)",
+                borderRadius: 16,
+                background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                padding: 24,
+                display: "grid",
+                gridTemplateColumns: "1fr auto",
+                gap: 24,
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontFamily: CINZEL,
+                    color: "#c9a24b",
+                    fontSize: 12.5,
+                    letterSpacing: ".1em",
+                    marginBottom: 10,
+                  }}
+                >
+                  {STUDIO.name.toUpperCase()}
+                </div>
+                {STUDIO.addressLines.map((line, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      fontSize: 13,
+                      color: i === 0 ? "#efe9df" : "#8c867a",
+                      fontWeight: i === 0 ? 600 : 400,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {line}
+                  </div>
+                ))}
+                <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => openExt(STUDIO.instagramVisagista)}
+                    style={socialBtn}
+                  >
+                    @ornellasvisagista
+                  </button>
+                  <button
+                    onClick={() => openExt(STUDIO.instagramStudio)}
+                    style={socialBtn}
+                  >
+                    @studioornellas
+                  </button>
+                  <button
+                    onClick={() => openExt(STUDIO.instagramBarbeiro)}
+                    style={socialBtn}
+                  >
+                    @ornellasbarbeiro
+                  </button>
+                </div>
+              </div>
+              <button
+                className="gbtn"
+                onClick={() => openExt(waLink("mentoria presencial do Estúdio Ornellas"))}
+                style={{
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "14px 24px",
+                  borderRadius: 10,
+                  fontFamily: MANROPE,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#1a160d",
+                  background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                WhatsApp {STUDIO.whatsappLabel}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* CONFIGURAÇÕES */}
         {screen === "config" && (
           <div className="scr" style={{ padding: "30px 48px 60px", maxWidth: 760 }}>
@@ -1507,6 +1873,17 @@ const pill = {
   border: "1px solid rgba(201,162,75,.22)",
   padding: "6px 12px",
   borderRadius: 20,
+};
+
+const socialBtn = {
+  cursor: "pointer",
+  padding: "8px 14px",
+  borderRadius: 20,
+  border: "1px solid rgba(201,162,75,.28)",
+  background: "rgba(255,255,255,.02)",
+  color: "#d8cdb6",
+  fontSize: 12.5,
+  fontFamily: "var(--font-manrope), sans-serif",
 };
 
 const materialBtn = {
