@@ -40,6 +40,15 @@ export default function LessonCard({
             <img
               src={lesson.img}
               alt={lesson.title}
+              loading="lazy"
+              onError={(e) => {
+                // maxresdefault nem sempre existe → cai para mqdefault (16:9, garantido)
+                const img = e.currentTarget;
+                if (!img.dataset.fb && img.src.includes("maxresdefault")) {
+                  img.dataset.fb = "1";
+                  img.src = img.src.replace("maxresdefault", "mqdefault");
+                }
+              }}
               style={{
                 position: "absolute",
                 inset: 0,

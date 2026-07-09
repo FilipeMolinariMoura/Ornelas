@@ -1042,6 +1042,36 @@ export default function Page() {
                       background: "linear-gradient(135deg,var(--surf),var(--bg))",
                     }}
                   />
+                  {al.img && (
+                    <>
+                      <img
+                        src={al.img}
+                        alt={al.title}
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          if (!img.dataset.fb && img.src.includes("maxresdefault")) {
+                            img.dataset.fb = "1";
+                            img.src = img.src.replace("maxresdefault", "mqdefault");
+                          }
+                        }}
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background:
+                            "linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.6))",
+                        }}
+                      />
+                    </>
+                  )}
                   <div
                     style={{
                       position: "absolute",
