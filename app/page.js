@@ -1,0 +1,1583 @@
+"use client";
+
+import { useMemo, useRef, useState } from "react";
+import { MODULES, USER, INITIAL_FAVS } from "./data";
+import LessonCard from "./LessonCard";
+
+const CINZEL = "var(--font-cinzel), serif";
+const MANROPE = "var(--font-manrope), sans-serif";
+
+// Configurações de exibição (props do protótipo original).
+const CARD_WIDTH = 300;
+const SHOW_CAPTIONS = true;
+const SHOW_PROGRESS = true;
+
+export default function Page() {
+  const [screen, setScreen] = useState("home");
+  const [nav, setNav] = useState("home");
+  const [moduleId, setModuleId] = useState("m1");
+  const [lessonId, setLessonId] = useState("l11");
+  const [progress, setProgress] = useState({});
+  const [fav, setFav] = useState(() => new Set(INITIAL_FAVS));
+
+  const mainRef = useRef(null);
+
+  const toTop = () => {
+    setTimeout(() => {
+      const m = mainRef.current;
+      if (m) m.scrollTo({ top: 0, behavior: "smooth" });
+    }, 0);
+  };
+
+  const goHome = () => {
+    setScreen("home");
+    setNav("home");
+    toTop();
+  };
+  const openFav = () => {
+    setScreen("favoritas");
+    setNav("fav");
+    toTop();
+  };
+  const openConfig = () => {
+    setScreen("config");
+    setNav("cfg");
+    toTop();
+  };
+  const selectExt = (k) => setNav(k);
+  const openModule = (id) => {
+    setScreen("module");
+    setModuleId(id);
+    toTop();
+  };
+  const openActiveModule = () => {
+    setScreen("module");
+    setModuleId(moduleId);
+    toTop();
+  };
+  const openLesson = (mid, lid) => {
+    setScreen("player");
+    setModuleId(mid);
+    setLessonId(lid);
+    toTop();
+  };
+  const scrollRow = (id, dir) => {
+    const el = document.getElementById("row-" + id);
+    if (el) el.scrollBy({ left: dir === "next" ? 660 : -660, behavior: "smooth" });
+  };
+  const toggleFav = (lid) => {
+    setFav((prev) => {
+      const s = new Set(prev);
+      if (s.has(lid)) s.delete(lid);
+      else s.add(lid);
+      return s;
+    });
+  };
+  const markComplete = () => {
+    setProgress((prev) => ({ ...prev, [lessonId]: 100 }));
+  };
+
+  const prog = (l) => (progress[l.id] != null ? progress[l.id] : l.progress);
+
+  const buildLesson = (m, l, i) => {
+    const p = prog(l);
+    const isFav = fav.has(l.id);
+    return {
+      ...l,
+      mid: m.id,
+      mnum: m.num,
+      mtitle: m.title,
+      code: m.num + "." + (i + 1),
+      fav: isFav,
+      favColor: isFav ? "#e7c87e" : "rgba(255,255,255,.55)",
+      favLabel: isFav ? "Favoritada" : "Favoritar",
+      prog: p,
+      progStyle: p + "%",
+      complete: p >= 100,
+      completeLabel: p >= 100 ? "Aula concluída ✓" : "Marcar como concluída",
+      progLabel: p >= 100 ? "concluída" : p > 0 ? p + "% assistido" : "não iniciada",
+      desc: l.desc || m.desc,
+    };
+  };
+
+  const vals = useMemo(() => {
+    const view = MODULES.map((m) => {
+      const lessons = m.lessons.map((l, i) => buildLesson(m, l, i));
+      const done = lessons.filter((x) => x.complete).length;
+      const pct = Math.round((done / lessons.length) * 100);
+      return {
+        ...m,
+        lessons,
+        count: lessons.length,
+        countLabel: lessons.length + " aulas",
+        pct,
+        pctStyle: pct + "%",
+        firstId: lessons[0].id,
+      };
+    });
+
+    const all = [].concat(...view.map((m) => m.lessons));
+    const continueList = all.filter((l) => l.prog > 0 && l.prog < 100);
+    const favList = all.filter((l) => l.fav);
+
+    const am = view.find((m) => m.id === moduleId) || view[0];
+    const al = am.lessons.find((l) => l.id === lessonId) || am.lessons[0];
+
+    const playerList = am.lessons.map((l) => {
+      const cur = l.id === al.id;
+      return {
+        ...l,
+        isCurrent: cur,
+        rowBg: cur ? "rgba(201,162,75,.1)" : "transparent",
+        rowBorder: cur ? "rgba(201,162,75,.35)" : "rgba(255,255,255,.06)",
+        titleColor: cur ? "#f3dca0" : "#ece7dd",
+        statusLabel: cur
+          ? "Assistindo agora · " + l.dur
+          : l.complete
+          ? "Concluída · " + l.dur
+          : l.dur,
+      };
+    });
+
+    return { view, continueList, favList, am, al, playerList };
+  }, [moduleId, lessonId, progress, fav]);
+
+  const { view, continueList, favList, am, al, playerList } = vals;
+
+  const navItems = [
+    { key: "home", label: "Página inicial", onClick: goHome },
+    { key: "fav", label: "Aulas favoritas", onClick: openFav },
+    { key: "yt", label: "Canal no YouTube", onClick: () => selectExt("yt") },
+    { key: "ig", label: "Instagram", onClick: () => selectExt("ig") },
+    { key: "cfg", label: "Configurações", onClick: openConfig },
+  ];
+
+  const cardBasis = CARD_WIDTH + "px";
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh", background: "#0b0a09" }}>
+      {/* SIDEBAR */}
+      <aside
+        style={{
+          position: "fixed",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 264,
+          display: "flex",
+          flexDirection: "column",
+          background: "linear-gradient(180deg,#100e0b,#0a0908)",
+          borderRight: "1px solid rgba(201,162,75,.16)",
+          zIndex: 20,
+        }}
+      >
+        <div
+          onClick={goHome}
+          style={{
+            cursor: "pointer",
+            padding: "26px 24px 22px",
+            borderBottom: "1px solid rgba(201,162,75,.12)",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: CINZEL,
+              fontWeight: 700,
+              fontSize: 24,
+              letterSpacing: ".08em",
+              background: "linear-gradient(180deg,#f7e6b6,#d4af5e 50%,#9a7a36)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
+            ORNELLAS
+          </div>
+          <div
+            style={{
+              marginTop: 4,
+              fontSize: 9.5,
+              letterSpacing: ".46em",
+              color: "#7c6a45",
+              paddingLeft: ".46em",
+            }}
+          >
+            BARBEIRO
+          </div>
+        </div>
+
+        <nav
+          style={{
+            padding: "18px 14px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 9.5,
+              letterSpacing: ".2em",
+              color: "#5f5949",
+              textTransform: "uppercase",
+              padding: "4px 12px 10px",
+            }}
+          >
+            Menu
+          </div>
+          {navItems.map((item) => {
+            const a = nav === item.key;
+            return (
+              <div
+                key={item.key}
+                className="nav-item"
+                onClick={item.onClick}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "11px 13px",
+                  borderRadius: 9,
+                  cursor: "pointer",
+                  fontSize: 13.5,
+                  fontWeight: a ? 700 : 500,
+                  color: a ? "#e7c87e" : "#b8b2a6",
+                  background: a ? "rgba(201,162,75,.1)" : "transparent",
+                  boxShadow: `inset 3px 0 0 ${a ? "#c9a24b" : "transparent"}`,
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    transform: "rotate(45deg)",
+                    background: a ? "#e7c87e" : "rgba(201,162,75,.35)",
+                    flexShrink: 0,
+                  }}
+                />
+                {item.label}
+              </div>
+            );
+          })}
+        </nav>
+
+        <div
+          style={{
+            margin: "6px 18px 18px",
+            padding: 14,
+            border: "1px solid rgba(201,162,75,.2)",
+            borderRadius: 12,
+            background:
+              "radial-gradient(120% 120% at 0% 0%, rgba(201,162,75,.1), transparent 60%)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 7,
+              fontSize: 9.5,
+              letterSpacing: ".18em",
+              color: "#c9a24b",
+              textTransform: "uppercase",
+            }}
+          >
+            <span
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: "#e7c87e",
+                boxShadow: "0 0 0 3px rgba(231,200,126,.18)",
+              }}
+            />
+            Ao vivo em breve
+          </div>
+          <div style={{ marginTop: 9, fontSize: 13, fontWeight: 600, color: "#efe9df" }}>
+            Mentoria ao vivo
+          </div>
+          <div style={{ marginTop: 3, fontSize: 11.5, color: "#8c867a" }}>
+            Quinta · 20h · Sala Ornellas
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: "auto",
+            padding: 16,
+            borderTop: "1px solid rgba(201,162,75,.12)",
+            display: "flex",
+            alignItems: "center",
+            gap: 11,
+          }}
+        >
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: CINZEL,
+              fontSize: 14,
+              color: "#1a160d",
+              background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+            }}
+          >
+            {USER.init}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#efe9df",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {USER.name}
+            </div>
+            <div style={{ fontSize: 10.5, color: "#7c6a45" }}>{USER.meta}</div>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN */}
+      <main
+        ref={mainRef}
+        style={{
+          marginLeft: 264,
+          flex: 1,
+          minWidth: 0,
+          height: "100vh",
+          overflowY: "auto",
+        }}
+      >
+        {/* TOP BAR */}
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 15,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            padding: "14px 48px",
+            background: "rgba(11,10,9,.82)",
+            backdropFilter: "blur(10px)",
+            borderBottom: "1px solid rgba(201,162,75,.1)",
+          }}
+        >
+          <div style={{ fontSize: 13, color: "#b3ac9f" }}>
+            Bem-vindo de volta,{" "}
+            <span style={{ color: "#efe9df", fontWeight: 600 }}>{USER.name}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 11, letterSpacing: ".04em", color: "#8c867a" }}>
+              28 aulas · 5 módulos
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "6px 12px",
+                border: "1px solid rgba(201,162,75,.3)",
+                borderRadius: 20,
+                fontSize: 11,
+                letterSpacing: ".06em",
+                color: "#e7c87e",
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#e7c87e",
+                }}
+              />
+              Acesso vitalício
+            </div>
+          </div>
+        </div>
+
+        {/* HOME */}
+        {screen === "home" && (
+          <div className="scr">
+            <section
+              style={{
+                position: "relative",
+                padding: "60px 48px 56px",
+                textAlign: "center",
+                overflow: "hidden",
+                background:
+                  "radial-gradient(120% 130% at 50% -10%, rgba(201,162,75,.14), transparent 55%), linear-gradient(180deg,#17130d,#0c0b09)",
+                borderBottom: "1px solid rgba(201,162,75,.2)",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 2px, transparent 2px 7px)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div style={{ position: "relative" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 14,
+                    color: "#c9a24b",
+                    fontSize: 10.5,
+                    letterSpacing: ".32em",
+                    textTransform: "uppercase",
+                    marginBottom: 18,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 42,
+                      height: 1,
+                      background: "linear-gradient(90deg,transparent,#c9a24b)",
+                    }}
+                  />
+                  Barbearia &amp; Estética Masculina
+                  <span
+                    style={{
+                      width: 42,
+                      height: 1,
+                      background: "linear-gradient(90deg,#c9a24b,transparent)",
+                    }}
+                  />
+                </div>
+                <h1
+                  style={{
+                    margin: 0,
+                    fontFamily: CINZEL,
+                    fontWeight: 700,
+                    fontSize: 62,
+                    lineHeight: 0.95,
+                    letterSpacing: ".06em",
+                    background: "linear-gradient(180deg,#f7e6b6,#d4af5e 45%,#9a7a36)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
+                >
+                  ORNELLAS
+                </h1>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    marginTop: 14,
+                    padding: "7px 24px",
+                    border: "1px solid rgba(201,162,75,.45)",
+                    borderRadius: 4,
+                    color: "#e7c87e",
+                    fontFamily: CINZEL,
+                    letterSpacing: ".42em",
+                    fontSize: 14,
+                    paddingLeft: "calc(24px + .42em)",
+                  }}
+                >
+                  BARBEIRO
+                </div>
+                <p
+                  style={{
+                    margin: "22px auto 0",
+                    maxWidth: 560,
+                    color: "#b3ac9f",
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                  }}
+                >
+                  Sua área de membros. Métodos exclusivos de visagismo, prótese capilar e
+                  gestão de barbearia premium — direto da metodologia de Gustavo Ornellas.
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 24,
+                    marginTop: 24,
+                    color: "#7c6a45",
+                    fontSize: 10,
+                    letterSpacing: ".3em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  <span>Por Excelência</span>
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      transform: "rotate(45deg)",
+                      background: "#c9a24b",
+                    }}
+                  />
+                  <span>em Serviço</span>
+                </div>
+              </div>
+            </section>
+
+            <div style={{ padding: "8px 48px 56px" }}>
+              {continueList.length > 0 && (
+                <>
+                  <div style={{ marginTop: 34, marginBottom: 16 }}>
+                    <div
+                      style={{
+                        fontFamily: CINZEL,
+                        color: "#c9a24b",
+                        fontSize: 13,
+                        letterSpacing: ".12em",
+                        marginBottom: 6,
+                      }}
+                    >
+                      CONTINUE DE ONDE PAROU
+                    </div>
+                    <div
+                      style={{
+                        height: 1,
+                        background:
+                          "linear-gradient(90deg,rgba(201,162,75,.3),transparent)",
+                      }}
+                    />
+                  </div>
+                  <div
+                    className="row-scroller"
+                    style={{
+                      display: "flex",
+                      gap: 18,
+                      overflowX: "auto",
+                      padding: "6px 2px 14px",
+                      scrollSnapType: "x mandatory",
+                    }}
+                  >
+                    {continueList.map((lesson) => (
+                      <LessonCard
+                        key={lesson.id}
+                        lesson={lesson}
+                        label={`Módulo ${lesson.mnum} · ${lesson.progLabel}`}
+                        onOpen={() => openLesson(lesson.mid, lesson.id)}
+                        onToggleFav={toggleFav}
+                        showCaptions={SHOW_CAPTIONS}
+                        showProgress={SHOW_PROGRESS}
+                        basis={cardBasis}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {view.map((module) => (
+                <div key={module.id}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-end",
+                      justifyContent: "space-between",
+                      gap: 20,
+                      margin: "40px 0 16px",
+                    }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          marginBottom: 7,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: CINZEL,
+                            color: "#c9a24b",
+                            fontSize: 13,
+                            letterSpacing: ".12em",
+                          }}
+                        >
+                          MÓDULO {module.num}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 9.5,
+                            color: "#a98c4e",
+                            letterSpacing: ".14em",
+                            textTransform: "uppercase",
+                            border: "1px solid rgba(201,162,75,.25)",
+                            padding: "2px 9px",
+                            borderRadius: 20,
+                          }}
+                        >
+                          {module.tag}
+                        </span>
+                      </div>
+                      <h2
+                        onClick={() => openModule(module.id)}
+                        className="lnk"
+                        style={{
+                          margin: 0,
+                          cursor: "pointer",
+                          fontSize: 22,
+                          fontWeight: 700,
+                          color: "#efe9df",
+                          letterSpacing: "-.01em",
+                        }}
+                      >
+                        {module.title}
+                      </h2>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span
+                        onClick={() => openModule(module.id)}
+                        className="lnk"
+                        style={{
+                          cursor: "pointer",
+                          color: "#c9a24b",
+                          fontSize: 12.5,
+                          letterSpacing: ".03em",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Ver módulo ›
+                      </span>
+                      <button
+                        className="arrow-btn"
+                        onClick={() => scrollRow(module.id, "prev")}
+                        style={arrowBtn}
+                      >
+                        ‹
+                      </button>
+                      <button
+                        className="arrow-btn"
+                        onClick={() => scrollRow(module.id, "next")}
+                        style={arrowBtn}
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    id={"row-" + module.id}
+                    className="row-scroller"
+                    style={{
+                      display: "flex",
+                      gap: 18,
+                      overflowX: "auto",
+                      padding: "6px 2px 14px",
+                      scrollSnapType: "x mandatory",
+                    }}
+                  >
+                    {module.lessons.map((lesson) => (
+                      <LessonCard
+                        key={lesson.id}
+                        lesson={lesson}
+                        label={`Aula ${lesson.code}`}
+                        onOpen={() => openLesson(lesson.mid, lesson.id)}
+                        onToggleFav={toggleFav}
+                        showCaptions={SHOW_CAPTIONS}
+                        showProgress={SHOW_PROGRESS}
+                        basis={cardBasis}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* MÓDULO */}
+        {screen === "module" && (
+          <div className="scr" style={{ padding: "26px 48px 60px" }}>
+            <div
+              onClick={goHome}
+              className="lnk"
+              style={{
+                cursor: "pointer",
+                color: "#8c867a",
+                fontSize: 12.5,
+                letterSpacing: ".03em",
+                marginBottom: 20,
+                display: "inline-block",
+              }}
+            >
+              ‹ Página inicial
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1.5fr 1fr",
+                gap: 32,
+                alignItems: "stretch",
+                marginBottom: 36,
+              }}
+            >
+              <div style={{ padding: "8px 4px" }}>
+                <div
+                  style={{
+                    fontFamily: CINZEL,
+                    color: "#c9a24b",
+                    fontSize: 13,
+                    letterSpacing: ".14em",
+                    marginBottom: 10,
+                  }}
+                >
+                  MÓDULO {am.num}
+                </div>
+                <h1
+                  style={{
+                    margin: "0 0 16px",
+                    fontSize: 34,
+                    fontWeight: 800,
+                    lineHeight: 1.12,
+                    letterSpacing: "-.01em",
+                    color: "#f3eee4",
+                  }}
+                >
+                  {am.title}
+                </h1>
+                <p
+                  style={{
+                    margin: "0 0 22px",
+                    color: "#b3ac9f",
+                    fontSize: 14.5,
+                    lineHeight: 1.75,
+                    maxWidth: 560,
+                  }}
+                >
+                  {am.desc}
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 9,
+                    marginBottom: 24,
+                  }}
+                >
+                  <span style={pill}>{am.countLabel}</span>
+                  <span style={pill}>Mentor · Gustavo Ornellas</span>
+                  <span style={pill}>{am.tag}</span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    maxWidth: 520,
+                    marginBottom: 24,
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      height: 6,
+                      borderRadius: 6,
+                      background: "rgba(255,255,255,.08)",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: am.pctStyle,
+                        background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#c9a24b",
+                      fontVariantNumeric: "tabular-nums",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {am.pct}% concluído
+                  </div>
+                </div>
+                <button
+                  className="gbtn"
+                  onClick={() => openLesson(am.id, am.firstId)}
+                  style={{
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "13px 26px",
+                    borderRadius: 10,
+                    fontFamily: MANROPE,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "#1a160d",
+                    background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 9,
+                  }}
+                >
+                  <span style={{ fontSize: 11 }}>▶</span> Assistir agora
+                </button>
+              </div>
+              <div
+                style={{
+                  position: "relative",
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  border: "1px solid rgba(201,162,75,.2)",
+                  background: "linear-gradient(135deg,#19140d,#0a0908)",
+                  minHeight: 240,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "repeating-linear-gradient(125deg, rgba(201,162,75,.05) 0 1px, transparent 1px 11px)",
+                  }}
+                />
+                <div style={{ position: "relative", textAlign: "center" }}>
+                  <div
+                    style={{
+                      fontFamily: CINZEL,
+                      fontSize: 84,
+                      color: "#c9a24b",
+                      opacity: 0.22,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {am.num}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 8,
+                      fontFamily: "ui-monospace,monospace",
+                      fontSize: 11,
+                      letterSpacing: ".04em",
+                      color: "rgba(201,162,75,.6)",
+                    }}
+                  >
+                    capa · módulo {am.num}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                fontFamily: CINZEL,
+                color: "#c9a24b",
+                fontSize: 13,
+                letterSpacing: ".12em",
+                marginBottom: 6,
+              }}
+            >
+              AULAS DO MÓDULO
+            </div>
+            <div
+              style={{
+                height: 1,
+                background: "linear-gradient(90deg,rgba(201,162,75,.3),transparent)",
+                marginBottom: 22,
+              }}
+            />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
+                gap: 22,
+              }}
+            >
+              {am.lessons.map((lesson) => (
+                <LessonCard
+                  key={lesson.id}
+                  lesson={lesson}
+                  label={`Aula ${lesson.code}`}
+                  onOpen={() => openLesson(lesson.mid, lesson.id)}
+                  onToggleFav={toggleFav}
+                  showCaptions={SHOW_CAPTIONS}
+                  showProgress={SHOW_PROGRESS}
+                  basis={null}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PLAYER */}
+        {screen === "player" && (
+          <div className="scr" style={{ padding: "26px 48px 60px" }}>
+            <div
+              onClick={openActiveModule}
+              className="lnk"
+              style={{
+                cursor: "pointer",
+                color: "#8c867a",
+                fontSize: 12.5,
+                marginBottom: 18,
+                display: "inline-block",
+              }}
+            >
+              ‹ {am.title}
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 360px",
+                gap: 28,
+                alignItems: "start",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    position: "relative",
+                    aspectRatio: "16/9",
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    border: "1px solid rgba(201,162,75,.2)",
+                    background: "linear-gradient(135deg,#16120c,#09080700)",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(135deg,#16120c,#0a0908)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background:
+                        "repeating-linear-gradient(125deg, rgba(201,162,75,.045) 0 1px, transparent 1px 12px)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 14,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: "50%",
+                        background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 14px 40px rgba(0,0,0,.55)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 0,
+                          height: 0,
+                          borderLeft: "24px solid #1a160d",
+                          borderTop: "15px solid transparent",
+                          borderBottom: "15px solid transparent",
+                          marginLeft: 6,
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "ui-monospace,monospace",
+                        fontSize: 11,
+                        letterSpacing: ".04em",
+                        color: "rgba(201,162,75,.6)",
+                      }}
+                    >
+                      player · {al.caption}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      padding: "14px 16px",
+                      background: "linear-gradient(0deg, rgba(8,7,6,.85), transparent)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: 4,
+                        borderRadius: 4,
+                        background: "rgba(255,255,255,.15)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: al.progStyle,
+                          background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginTop: 8,
+                        fontSize: 11,
+                        color: "#cabfa6",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      <span>00:00</span>
+                      <span>{al.dur}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 22,
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    gap: 20,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: ".14em",
+                        color: "#c9a24b",
+                        textTransform: "uppercase",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Módulo {am.num} · Aula {al.code}
+                    </div>
+                    <h1
+                      style={{
+                        margin: 0,
+                        fontSize: 26,
+                        fontWeight: 800,
+                        lineHeight: 1.2,
+                        letterSpacing: "-.01em",
+                        color: "#f3eee4",
+                      }}
+                    >
+                      {al.title}
+                    </h1>
+                  </div>
+                  <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+                    <button
+                      className="gbtn"
+                      onClick={markComplete}
+                      style={{
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "11px 18px",
+                        borderRadius: 9,
+                        fontFamily: MANROPE,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "#1a160d",
+                        background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                      }}
+                    >
+                      {al.completeLabel}
+                    </button>
+                    <button
+                      onClick={() => toggleFav(al.id)}
+                      style={{
+                        cursor: "pointer",
+                        padding: "11px 16px",
+                        borderRadius: 9,
+                        fontFamily: MANROPE,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: al.favColor,
+                        background: "rgba(255,255,255,.03)",
+                        border: "1px solid rgba(201,162,75,.28)",
+                      }}
+                    >
+                      ★ {al.favLabel}
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 11,
+                    marginTop: 18,
+                    padding: "14px 0",
+                    borderTop: "1px solid rgba(201,162,75,.12)",
+                    borderBottom: "1px solid rgba(201,162,75,.12)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontFamily: CINZEL,
+                      fontSize: 13,
+                      color: "#1a160d",
+                      background: "linear-gradient(180deg,#f3dca0,#c9a24b)",
+                    }}
+                  >
+                    GO
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: "#efe9df" }}>
+                      Gustavo Ornellas
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#8c867a" }}>
+                      Mentor · Estúdio Ornellas
+                    </div>
+                  </div>
+                </div>
+
+                <p
+                  style={{
+                    margin: "20px 0 0",
+                    color: "#b3ac9f",
+                    fontSize: 14.5,
+                    lineHeight: 1.8,
+                    maxWidth: 680,
+                  }}
+                >
+                  {al.desc}
+                </p>
+
+                <div
+                  style={{
+                    marginTop: 22,
+                    display: "flex",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={materialBtn}>
+                    <span style={{ color: "#c9a24b" }}>⤓</span> Material em PDF
+                  </div>
+                  <div style={materialBtn}>
+                    <span style={{ color: "#c9a24b" }}>◆</span> Tirar dúvida no grupo
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  border: "1px solid rgba(201,162,75,.16)",
+                  borderRadius: 14,
+                  background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    padding: "16px 16px 12px",
+                    borderBottom: "1px solid rgba(201,162,75,.12)",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: CINZEL,
+                      color: "#c9a24b",
+                      fontSize: 12,
+                      letterSpacing: ".1em",
+                    }}
+                  >
+                    CONTEÚDO DO MÓDULO
+                  </div>
+                  <div style={{ fontSize: 12, color: "#8c867a", marginTop: 4 }}>
+                    {am.countLabel} · {am.pct}% concluído
+                  </div>
+                </div>
+                <div
+                  style={{
+                    padding: 10,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    maxHeight: 560,
+                    overflowY: "auto",
+                  }}
+                >
+                  {playerList.map((item) => (
+                    <div
+                      key={item.id}
+                      className="plrow"
+                      onClick={() => openLesson(item.mid, item.id)}
+                      style={{
+                        display: "flex",
+                        gap: 12,
+                        padding: 10,
+                        borderRadius: 10,
+                        cursor: "pointer",
+                        background: item.rowBg,
+                        border: `1px solid ${item.rowBorder}`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          flex: "0 0 100px",
+                          aspectRatio: "16/9",
+                          borderRadius: 7,
+                          background: "linear-gradient(135deg,#191510,#0c0b0a)",
+                          border: "1px solid rgba(201,162,75,.14)",
+                          position: "relative",
+                          overflow: "hidden",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: CINZEL,
+                            color: "#c9a24b",
+                            opacity: 0.3,
+                            fontSize: 17,
+                          }}
+                        >
+                          {item.code}
+                        </span>
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            height: 3,
+                            background: "rgba(255,255,255,.1)",
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              width: item.progStyle,
+                              background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          minWidth: 0,
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: item.titleColor,
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {item.title}
+                        </div>
+                        <div style={{ fontSize: 11, color: "#8c867a", marginTop: 3 }}>
+                          {item.statusLabel}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FAVORITAS */}
+        {screen === "favoritas" && (
+          <div className="scr" style={{ padding: "30px 48px 60px" }}>
+            <div
+              style={{
+                fontFamily: CINZEL,
+                color: "#c9a24b",
+                fontSize: 13,
+                letterSpacing: ".14em",
+                marginBottom: 8,
+              }}
+            >
+              SUA SELEÇÃO
+            </div>
+            <h1 style={{ margin: "0 0 4px", fontSize: 30, fontWeight: 800, color: "#f3eee4" }}>
+              Aulas favoritas
+            </h1>
+            <p style={{ margin: "0 0 26px", color: "#8c867a", fontSize: 13.5 }}>
+              Aulas que você marcou com ★ para assistir depois.
+            </p>
+            {favList.length > 0 ? (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
+                  gap: 22,
+                }}
+              >
+                {favList.map((lesson) => (
+                  <LessonCard
+                    key={lesson.id}
+                    lesson={lesson}
+                    label={`Módulo ${lesson.mnum}`}
+                    onOpen={() => openLesson(lesson.mid, lesson.id)}
+                    onToggleFav={toggleFav}
+                    showCaptions={SHOW_CAPTIONS}
+                    showProgress={false}
+                    basis={null}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div
+                style={{
+                  border: "1px dashed rgba(201,162,75,.28)",
+                  borderRadius: 14,
+                  padding: "60px 24px",
+                  textAlign: "center",
+                  color: "#8c867a",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 30,
+                    color: "#c9a24b",
+                    opacity: 0.5,
+                    marginBottom: 10,
+                  }}
+                >
+                  ★
+                </div>
+                <div style={{ fontSize: 14 }}>
+                  Você ainda não favoritou nenhuma aula. Toque na estrela de uma aula para
+                  salvá-la aqui.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CONFIGURAÇÕES */}
+        {screen === "config" && (
+          <div className="scr" style={{ padding: "30px 48px 60px", maxWidth: 760 }}>
+            <div
+              style={{
+                fontFamily: CINZEL,
+                color: "#c9a24b",
+                fontSize: 13,
+                letterSpacing: ".14em",
+                marginBottom: 8,
+              }}
+            >
+              CONTA
+            </div>
+            <h1 style={{ margin: "0 0 26px", fontSize: 30, fontWeight: 800, color: "#f3eee4" }}>
+              Configurações
+            </h1>
+            <div
+              style={{
+                border: "1px solid rgba(201,162,75,.16)",
+                borderRadius: 14,
+                background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                padding: 22,
+                marginBottom: 18,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  letterSpacing: ".12em",
+                  color: "#c9a24b",
+                  textTransform: "uppercase",
+                  marginBottom: 16,
+                }}
+              >
+                Dados do membro
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 16,
+                }}
+              >
+                <Field label="Nome" value={USER.fullName} />
+                <Field label="E-mail" value={USER.email} />
+                <Field label="Plano" value={USER.plan} valueColor="#e7c87e" />
+                <Field label="Membro desde" value={USER.since} />
+              </div>
+            </div>
+            <div
+              style={{
+                border: "1px solid rgba(201,162,75,.16)",
+                borderRadius: 14,
+                background: "linear-gradient(180deg,#100e0b,#0b0a09)",
+                padding: 22,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  letterSpacing: ".12em",
+                  color: "#c9a24b",
+                  textTransform: "uppercase",
+                  marginBottom: 8,
+                }}
+              >
+                Preferências
+              </div>
+              <Toggle
+                title="Avisar sobre novas aulas"
+                sub="Receba e-mail quando um módulo for liberado"
+                border
+              />
+              <Toggle
+                title="Lembrete de aula ao vivo"
+                sub="Notificação 1h antes da mentoria"
+              />
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+const arrowBtn = {
+  width: 34,
+  height: 34,
+  borderRadius: "50%",
+  border: "1px solid rgba(201,162,75,.25)",
+  background: "rgba(255,255,255,.02)",
+  color: "#c9a24b",
+  cursor: "pointer",
+  fontSize: 16,
+  lineHeight: 1,
+};
+
+const pill = {
+  fontSize: 11.5,
+  color: "#d8cdb6",
+  border: "1px solid rgba(201,162,75,.22)",
+  padding: "6px 12px",
+  borderRadius: 20,
+};
+
+const materialBtn = {
+  display: "flex",
+  alignItems: "center",
+  gap: 9,
+  padding: "11px 16px",
+  borderRadius: 10,
+  border: "1px solid rgba(201,162,75,.22)",
+  background: "rgba(255,255,255,.02)",
+  color: "#d8cdb6",
+  fontSize: 13,
+  cursor: "pointer",
+};
+
+function Field({ label, value, valueColor = "#efe9df" }) {
+  return (
+    <div>
+      <div style={{ fontSize: 11, color: "#8c867a", marginBottom: 6 }}>{label}</div>
+      <div
+        style={{
+          padding: "11px 13px",
+          border: "1px solid rgba(201,162,75,.18)",
+          borderRadius: 9,
+          background: "rgba(255,255,255,.02)",
+          fontSize: 13.5,
+          color: valueColor,
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function Toggle({ title, sub, border }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "14px 0",
+        ...(border ? { borderBottom: "1px solid rgba(201,162,75,.1)" } : {}),
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 13.5, color: "#efe9df", fontWeight: 600 }}>{title}</div>
+        <div style={{ fontSize: 11.5, color: "#8c867a" }}>{sub}</div>
+      </div>
+      <div
+        style={{
+          width: 42,
+          height: 24,
+          borderRadius: 20,
+          background: "linear-gradient(90deg,#c9a24b,#f3dca0)",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: 3,
+            right: 3,
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            background: "#1a160d",
+          }}
+        />
+      </div>
+    </div>
+  );
+}

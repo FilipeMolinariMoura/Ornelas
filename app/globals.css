@@ -1,0 +1,82 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #0b0a09;
+  color: #ece7dd;
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.row-scroller {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.row-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.lesson-card {
+  transition: transform 0.25s ease;
+}
+.lesson-card:hover {
+  transform: translateY(-6px);
+}
+.lesson-card:hover .lc-thumb {
+  border-color: rgba(201, 162, 75, 0.55) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6);
+}
+.lesson-card:hover .lc-overlay {
+  opacity: 1 !important;
+}
+.lesson-card:hover .lc-num {
+  opacity: 0.16 !important;
+}
+
+.nav-item {
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.nav-item:hover {
+  color: #e7c87e !important;
+  background: rgba(201, 162, 75, 0.07) !important;
+}
+
+.arrow-btn {
+  transition: all 0.2s ease;
+}
+.arrow-btn:hover {
+  border-color: rgba(201, 162, 75, 0.6) !important;
+  color: #e7c87e !important;
+  background: rgba(201, 162, 75, 0.08) !important;
+}
+
+.plrow {
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.plrow:hover {
+  background: rgba(201, 162, 75, 0.06) !important;
+  border-color: rgba(201, 162, 75, 0.25) !important;
+}
+
+.gbtn {
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.gbtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(201, 162, 75, 0.25);
+}
+
+.lnk {
+  transition: color 0.2s ease;
+}
+.lnk:hover {
+  color: #e7c87e !important;
+}
+
+.scr {
+  opacity: 1;
+}
