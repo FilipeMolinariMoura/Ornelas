@@ -3,6 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MODULES, MENTORIAS, STUDIO, USER, INITIAL_FAVS } from "./data";
 import LessonCard from "./LessonCard";
+import OrnellasLogo from "./OrnellasLogo";
+
+const THEMES = [
+  { key: "classic", label: "Clássico" },
+  { key: "visagista", label: "Visagista" },
+  { key: "ornellas", label: "Studio" },
+];
 
 const CINZEL = "var(--font-title), serif";
 const MANROPE = "var(--font-manrope), sans-serif";
@@ -19,18 +26,34 @@ export default function Page() {
   const [lessonId, setLessonId] = useState("l11");
   const [progress, setProgress] = useState({});
   const [fav, setFav] = useState(() => new Set(INITIAL_FAVS));
-  const [theme, setTheme] = useState("classic"); // "classic" | "visagista"
+  const [theme, setTheme] = useState("classic"); // classic | visagista | ornellas
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Persiste a escolha de tema entre visitas.
   useEffect(() => {
     const saved = window.localStorage.getItem("ornellas-theme");
-    if (saved === "classic" || saved === "visagista") setTheme(saved);
+    if (THEMES.some((t) => t.key === saved)) setTheme(saved);
   }, []);
   useEffect(() => {
     window.localStorage.setItem("ornellas-theme", theme);
   }, [theme]);
-  const toggleTheme = () =>
-    setTheme((t) => (t === "classic" ? "visagista" : "classic"));
+
+  // Responsivo: sidebar vira gaveta no mobile e começa recolhida.
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 900px)");
+    const apply = () => {
+      setIsMobile(mq.matches);
+      setSidebarOpen(!mq.matches);
+    };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  const closeOnMobile = () => {
+    if (isMobile) setSidebarOpen(false);
+  };
 
   const mainRef = useRef(null);
 
@@ -174,7 +197,7 @@ export default function Page() {
     { key: "yt", label: "Canal no YouTube", onClick: () => openExt(STUDIO.youtube) },
     { key: "ig", label: "Instagram", onClick: () => openExt(STUDIO.instagramVisagista) },
     { key: "cfg", label: "Configurações", onClick: openConfig },
-  ];
+  ].map((it) => ({ ...it, onClick: () => { it.onClick(); closeOnMobile(); } }));
 
   const cardBasis = CARD_WIDTH + "px";
 
@@ -183,6 +206,19 @@ export default function Page() {
       data-theme={theme}
       style={{ display: "flex", minHeight: "100vh", background: "var(--bg)" }}
     >
+      {/* Backdrop da gaveta no mobile */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,.55)",
+            zIndex: 35,
+          }}
+        />
+      )}
+
       {/* SIDEBAR */}
       <aside
         style={{
@@ -195,43 +231,26 @@ export default function Page() {
           flexDirection: "column",
           background: "linear-gradient(180deg,var(--surf),var(--bg))",
           borderRight: "1px solid rgba(var(--gold-rgb),.16)",
-          zIndex: 20,
+          zIndex: 40,
+          transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
+          transition: "transform .28s ease",
+          boxShadow: isMobile && sidebarOpen ? "8px 0 40px rgba(0,0,0,.5)" : "none",
         }}
       >
         <div
-          onClick={goHome}
+          onClick={() => {
+            goHome();
+            closeOnMobile();
+          }}
           style={{
             cursor: "pointer",
-            padding: "26px 24px 22px",
+            padding: "24px 16px 20px",
             borderBottom: "1px solid rgba(var(--gold-rgb),.12)",
-            textAlign: "center",
+            display: "flex",
+            justifyContent: "center",
           }}
         >
-          <div
-            style={{
-              fontFamily: CINZEL,
-              fontWeight: 700,
-              fontSize: 24,
-              letterSpacing: ".08em",
-              background: "linear-gradient(180deg,var(--gold-cream),var(--gold) 50%,var(--gold-deep))",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-            }}
-          >
-            ORNELLAS
-          </div>
-          <div
-            style={{
-              marginTop: 4,
-              fontSize: 9.5,
-              letterSpacing: ".46em",
-              color: "var(--text-faint)",
-              paddingLeft: ".46em",
-            }}
-          >
-            BARBEIRO
-          </div>
+          <OrnellasLogo variant="mark" height={64} showFlanks={false} />
         </div>
 
         <nav
@@ -380,7 +399,8 @@ export default function Page() {
       <main
         ref={mainRef}
         style={{
-          marginLeft: 264,
+          marginLeft: !isMobile && sidebarOpen ? 264 : 0,
+          transition: "margin-left .28s ease",
           flex: 1,
           minWidth: 0,
           height: "100vh",
@@ -403,17 +423,48 @@ export default function Page() {
             borderBottom: "1px solid rgba(var(--gold-rgb),.1)",
           }}
         >
-          <div style={{ fontSize: 13, color: "var(--text-mut)" }}>
-            Bem-vindo de volta,{" "}
-            <span style={{ color: "var(--text)", fontWeight: 600 }}>{USER.name}</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ fontSize: 11, letterSpacing: ".04em", color: "var(--text-dim)" }}>
-              28 aulas · 5 módulos
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+            <button
+              aria-label="Abrir/fechar menu"
+              onClick={() => setSidebarOpen((o) => !o)}
+              className="arrow-btn"
+              style={{
+                width: 40,
+                height: 34,
+                borderRadius: 9,
+                border: "1px solid rgba(var(--gold-rgb),.25)",
+                background: "rgba(255,255,255,.02)",
+                color: "var(--gold)",
+                cursor: "pointer",
+                fontSize: 16,
+                lineHeight: 1,
+                flexShrink: 0,
+              }}
+            >
+              ☰
+            </button>
             <div
               style={{
-                display: "flex",
+                fontSize: 13,
+                color: "var(--text-mut)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              Bem-vindo de volta,{" "}
+              <span style={{ color: "var(--text)", fontWeight: 600 }}>{USER.name}</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {!isMobile && (
+              <div style={{ fontSize: 11, letterSpacing: ".04em", color: "var(--text-dim)" }}>
+                28 aulas · 5 módulos
+              </div>
+            )}
+            <div
+              style={{
+                display: isMobile ? "none" : "flex",
                 alignItems: "center",
                 gap: 7,
                 padding: "6px 12px",
@@ -435,23 +486,28 @@ export default function Page() {
               Acesso vitalício
             </div>
 
-            {/* Toggle de identidade visual */}
+            {/* Seletor de identidade visual (3 modos) */}
             <div
-              onClick={toggleTheme}
-              title="Alternar identidade visual"
+              title="Identidade visual"
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 4,
+                gap: 3,
                 padding: 4,
                 border: "1px solid rgba(var(--gold-rgb),.3)",
                 borderRadius: 20,
-                cursor: "pointer",
                 userSelect: "none",
               }}
             >
-              <span style={segStyle(theme === "classic")}>Clássico</span>
-              <span style={segStyle(theme === "visagista")}>Visagista</span>
+              {THEMES.map((t) => (
+                <span
+                  key={t.key}
+                  onClick={() => setTheme(t.key)}
+                  style={{ ...segStyle(theme === t.key), cursor: "pointer" }}
+                >
+                  {t.label}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -509,38 +565,14 @@ export default function Page() {
                     }}
                   />
                 </div>
-                <h1
-                  style={{
-                    margin: 0,
-                    fontFamily: CINZEL,
-                    fontWeight: 700,
-                    fontSize: 62,
-                    lineHeight: 0.95,
-                    letterSpacing: ".06em",
-                    background: "linear-gradient(180deg,var(--gold-cream),var(--gold) 45%,var(--gold-deep))",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    color: "transparent",
-                  }}
-                >
-                  ORNELLAS
-                </h1>
                 <div
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    marginTop: 14,
-                    padding: "7px 24px",
-                    border: "1px solid rgba(var(--gold-rgb),.45)",
-                    borderRadius: 4,
-                    color: "var(--gold-bright)",
-                    fontFamily: CINZEL,
-                    letterSpacing: ".42em",
-                    fontSize: 14,
-                    paddingLeft: "calc(24px + .42em)",
+                    display: "flex",
+                    justifyContent: "center",
+                    marginTop: 6,
                   }}
                 >
-                  BARBEIRO
+                  <OrnellasLogo height={isMobile ? 168 : 240} />
                 </div>
                 <p
                   style={{

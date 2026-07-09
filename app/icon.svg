@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd88a"/>
+      <stop offset="0.5" stop-color="#ea9e1a"/>
+      <stop offset="1" stop-color="#a86f10"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="12.5" fill="none" stroke="#ea9e1a" stroke-opacity="0.35" stroke-width="1.5"/>
+  <!-- Monograma O -->
+  <circle cx="32" cy="27" r="14.5" fill="none" stroke="url(#g)" stroke-width="7"/>
+  <!-- Fita BARBEIRO -->
+  <path d="M 14 47 L 50 47 L 53 51 L 50 55 L 14 55 L 11 51 Z" fill="url(#g)"/>
+  <text x="32" y="53.4" text-anchor="middle" font-family="Arial Narrow, Arial, sans-serif" font-weight="700" font-size="8" letter-spacing="1.5" fill="#0a0a0a">BARBER</text>
+</svg>

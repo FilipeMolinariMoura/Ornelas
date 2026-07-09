@@ -1,4 +1,4 @@
-import { Cinzel, Manrope, Oswald } from "next/font/google";
+import { Cinzel, Manrope, Oswald, Anton, Dancing_Script } from "next/font/google";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -23,6 +23,22 @@ const oswald = Oswald({
   display: "swap",
 });
 
+// Fonte pesada/condensada para o tema "Studio Ornellas" e para a logo.
+const anton = Anton({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-anton",
+  display: "swap",
+});
+
+// Script para o "Studio" da logo e detalhes elegantes.
+const dancing = Dancing_Script({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  variable: "--font-script",
+  display: "swap",
+});
+
 export const metadata = {
   title: "Área de Membros · Ornellas Barbeiro",
   description:
@@ -38,7 +54,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="pt-BR"
-      className={`${cinzel.variable} ${manrope.variable} ${oswald.variable}`}
+      className={`${cinzel.variable} ${manrope.variable} ${oswald.variable} ${anton.variable} ${dancing.variable}`}
     >
       <body>{children}</body>
     </html>

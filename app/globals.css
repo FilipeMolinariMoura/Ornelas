@@ -61,6 +61,35 @@
   --title-tracking: 0.01em;
 }
 
+/* ===== Tema STUDIO ORNELLAS — âmbar do logo + Man's Club + Anton ===== */
+[data-theme="ornellas"] {
+  --bg: #0a0a0a;
+  --surf: #16110b;
+  --thumb1: #1b140d;
+  --thumb2: #0c0a07;
+
+  --gold: #ea9e1a;
+  --gold-bright: #f6b733;
+  --gold-light: #ffcf6b;
+  --gold-deep: #a86f10;
+  --gold-cream: #ffe3a6;
+  --on-gold: #1a1206;
+
+  --text: #f4efe6;
+  --text-soft: #ddd2c0;
+  --text-mut: #b6ab99;
+  --text-dim: #8a8072;
+  --text-faint: #6f6455;
+
+  --gold-rgb: 234, 158, 26;
+  --bg-rgb: 10, 10, 10;
+
+  --font-title: var(--font-anton);
+  --title-transform: uppercase;
+  --title-style: normal;
+  --title-tracking: 0.02em;
+}
+
 html,
 body {
   margin: 0;
